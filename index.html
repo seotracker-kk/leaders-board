@@ -6,29 +6,18 @@
 <title>88gravity | Task Dashboard</title>
 <style>
   :root {
-    --navy:   #1A1A2E;
-    --mid:    #16213E;
-    --blue:   #0F3460;
-    --accent: #E94560;
-    --teal:   #2E86AB;
-    --green:  #1E8449;
-    --white:  #FFFFFF;
-    --gray50: #F8FAFC;
-    --gray100:#F0F4F8;
-    --gray200:#E2E8F0;
-    --gray400:#94A3B8;
-    --gray600:#475569;
-    --gray800:#1E293B;
-    --radius: 10px;
-    --shadow: 0 2px 12px rgba(0,0,0,.08);
-    --shadow-lg: 0 8px 32px rgba(0,0,0,.15);
-    --sidebar-w: 230px;
+    --navy:#1A1A2E;--mid:#16213E;--blue:#0F3460;--accent:#E94560;
+    --teal:#2E86AB;--green:#1E8449;--white:#FFFFFF;
+    --gray50:#F8FAFC;--gray100:#F0F4F8;--gray200:#E2E8F0;
+    --gray400:#94A3B8;--gray600:#475569;--gray800:#1E293B;
+    --radius:10px;--shadow:0 2px 12px rgba(0,0,0,.08);
+    --shadow-lg:0 8px 32px rgba(0,0,0,.15);--sidebar-w:230px;
   }
   *{box-sizing:border-box;margin:0;padding:0}
   body{font-family:'Segoe UI',Arial,sans-serif;background:var(--gray100);color:var(--gray800);display:flex;min-height:100vh;font-size:14px}
 
-  /* ── SIDEBAR ── */
-  .sidebar{width:var(--sidebar-w);background:var(--navy);display:flex;flex-direction:column;position:fixed;top:0;left:0;height:100vh;z-index:100}
+  /* SIDEBAR */
+  .sidebar{width:var(--sidebar-w);background:var(--navy);display:flex;flex-direction:column;position:fixed;top:0;left:0;height:100vh;z-index:200;transition:transform .28s cubic-bezier(.4,0,.2,1)}
   .sidebar-logo{padding:20px 18px 16px;border-bottom:1px solid rgba(255,255,255,.1)}
   .sidebar-logo h1{color:#fff;font-size:18px;font-weight:700;letter-spacing:-.3px}
   .sidebar-logo span{color:var(--accent);font-size:11px;font-weight:500;letter-spacing:1px;text-transform:uppercase}
@@ -41,51 +30,48 @@
   .nav-item .badge{margin-left:auto;background:var(--accent);color:#fff;border-radius:10px;padding:1px 7px;font-size:11px;font-weight:700}
   .sidebar-footer{padding:14px 18px;border-top:1px solid rgba(255,255,255,.1);color:rgba(255,255,255,.4);font-size:11px}
 
-  /* ── MAIN ── */
+  /* MAIN */
   .main{margin-left:var(--sidebar-w);flex:1;display:flex;flex-direction:column;min-height:100vh}
   .topbar{background:#fff;border-bottom:1px solid var(--gray200);padding:0 28px;height:58px;display:flex;align-items:center;gap:14px;position:sticky;top:0;z-index:50}
   .topbar-title{font-size:17px;font-weight:700;color:var(--navy);flex:1}
   .search-box{display:flex;align-items:center;background:var(--gray100);border:1px solid var(--gray200);border-radius:8px;padding:0 12px;gap:8px;height:36px}
-  .search-box input{border:none;background:none;outline:none;font-size:13px;width:220px;color:var(--gray800)}
+  .search-box input{border:none;background:none;outline:none;font-size:13px;width:200px;color:var(--gray800)}
   .search-box input::placeholder{color:var(--gray400)}
   .btn{display:inline-flex;align-items:center;gap:6px;padding:8px 16px;border-radius:8px;font-size:13px;font-weight:600;cursor:pointer;border:none;transition:all .15s}
-  .btn-primary{background:var(--accent);color:#fff}
-  .btn-primary:hover{background:#c73652}
-  .btn-secondary{background:var(--gray100);color:var(--gray600);border:1px solid var(--gray200)}
-  .btn-secondary:hover{background:var(--gray200)}
+  .btn-primary{background:var(--accent);color:#fff}.btn-primary:hover{background:#c73652}
+  .btn-secondary{background:var(--gray100);color:var(--gray600);border:1px solid var(--gray200)}.btn-secondary:hover{background:var(--gray200)}
+  .btn-green{background:#1E8449;color:#fff}.btn-green:hover{background:#196f3d}
+  .btn-blue{background:var(--blue);color:#fff}.btn-blue:hover{background:#0a2744}
   .btn-sm{padding:5px 11px;font-size:12px}
-  .btn-icon{padding:7px 9px;background:var(--gray100);border:1px solid var(--gray200);border-radius:7px;cursor:pointer;font-size:14px;transition:all .15s}
-  .btn-icon:hover{background:var(--gray200)}
+  .btn-icon{padding:7px 9px;background:var(--gray100);border:1px solid var(--gray200);border-radius:7px;cursor:pointer;font-size:14px;transition:all .15s}.btn-icon:hover{background:var(--gray200)}
 
-  /* ── CONTENT ── */
+  /* CONTENT */
   .content{padding:24px 28px;flex:1}
-  .page{display:none}
-  .page.active{display:block}
+  .page{display:none}.page.active{display:block}
 
-  /* ── KPI CARDS ── */
+  /* KPI CARDS */
   .kpi-grid{display:grid;grid-template-columns:repeat(7,1fr);gap:12px;margin-bottom:24px}
-  .kpi-card{background:#fff;border-radius:var(--radius);padding:16px 14px;box-shadow:var(--shadow);border-top:3px solid transparent;cursor:default}
+  .kpi-card{background:#fff;border-radius:var(--radius);padding:16px 14px;box-shadow:var(--shadow);border-top:3px solid transparent}
   .kpi-label{font-size:11px;font-weight:600;color:var(--gray400);text-transform:uppercase;letter-spacing:.5px;margin-bottom:6px}
   .kpi-value{font-size:28px;font-weight:800;line-height:1;margin-bottom:3px}
   .kpi-sub{font-size:11px;color:var(--gray400)}
-  .kpi-total  {border-top-color:var(--navy)}
+  .kpi-total{border-top-color:var(--navy)}
   .kpi-overdue{border-top-color:#C0392B}.kpi-overdue .kpi-value{color:#C0392B}
-  .kpi-today  {border-top-color:#7B2FBE}.kpi-today   .kpi-value{color:#7B2FBE}
-  .kpi-prog   {border-top-color:var(--teal)}.kpi-prog .kpi-value{color:var(--teal)}
+  .kpi-today{border-top-color:#7B2FBE}.kpi-today .kpi-value{color:#7B2FBE}
+  .kpi-prog{border-top-color:var(--teal)}.kpi-prog .kpi-value{color:var(--teal)}
   .kpi-pending{border-top-color:#B7791F}.kpi-pending .kpi-value{color:#B7791F}
-  .kpi-ns     {border-top-color:var(--gray400)}.kpi-ns .kpi-value{color:var(--gray600)}
-  .kpi-done   {border-top-color:var(--green)}.kpi-done .kpi-value{color:var(--green)}
+  .kpi-ns{border-top-color:var(--gray400)}.kpi-ns .kpi-value{color:var(--gray600)}
+  .kpi-done{border-top-color:var(--green)}.kpi-done .kpi-value{color:var(--green)}
 
-  /* ── FILTER BAR ── */
+  /* FILTER BAR */
   .filter-bar{display:flex;gap:10px;margin-bottom:16px;flex-wrap:wrap;align-items:center}
   .filter-bar select{padding:7px 11px;border:1px solid var(--gray200);border-radius:8px;font-size:13px;color:var(--gray800);background:#fff;cursor:pointer;outline:none}
-  .filter-bar select:focus{border-color:var(--blue)}
   .filter-label{font-size:12px;font-weight:600;color:var(--gray600);white-space:nowrap}
   .active-count{margin-left:auto;font-size:12px;color:var(--gray400);font-weight:500}
 
-  /* ── TABLE ── */
-  .table-wrap{background:#fff;border-radius:var(--radius);box-shadow:var(--shadow);overflow:hidden}
-  .task-table{width:100%;border-collapse:collapse}
+  /* TABLE */
+  .table-wrap{background:#fff;border-radius:var(--radius);box-shadow:var(--shadow);overflow-x:auto;-webkit-overflow-scrolling:touch}
+  .task-table{width:100%;border-collapse:collapse;min-width:720px}
   .task-table th{background:var(--navy);color:#fff;padding:10px 14px;text-align:left;font-size:12px;font-weight:600;letter-spacing:.3px;white-space:nowrap;cursor:pointer;user-select:none}
   .task-table th:hover{background:var(--blue)}
   .task-table th.sorted-asc::after{content:" ↑"}
@@ -93,31 +79,32 @@
   .task-table td{padding:10px 14px;border-bottom:1px solid var(--gray100);vertical-align:middle;font-size:13px}
   .task-table tr:last-child td{border-bottom:none}
   .task-table tr:hover td{background:var(--gray50)}
-  .task-name{font-weight:600;color:var(--navy);max-width:300px}
-  .task-remarks{color:var(--gray400);font-size:12px;margin-top:2px;max-width:300px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .task-name{font-weight:600;color:var(--navy);max-width:280px}
+  .task-remarks{color:var(--gray400);font-size:12px;margin-top:2px;max-width:280px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 
-  /* ── STATUS / PRIORITY BADGES ── */
+  /* BADGES */
   .badge{display:inline-flex;align-items:center;padding:3px 10px;border-radius:20px;font-size:11px;font-weight:700;white-space:nowrap}
-  .s-overdue  {background:#FFE0E0;color:#C0392B}
-  .s-pending  {background:#FFF3CD;color:#856404}
-  .s-progress {background:#D6EAF8;color:#1A5276}
-  .s-done     {background:#D5F5E3;color:#1E8449}
-  .s-notstart {background:#F2F3F4;color:#566573}
-  .p-high     {background:#FADBD8;color:#922B21}
-  .p-medium   {background:#FDEBD0;color:#784212}
-  .p-low      {background:#D5F5E3;color:#1E8449}
+  .s-overdue{background:#FFE0E0;color:#C0392B}
+  .s-pending{background:#FFF3CD;color:#856404}
+  .s-progress{background:#D6EAF8;color:#1A5276}
+  .s-done{background:#D5F5E3;color:#1E8449}
+  .s-notstart{background:#F2F3F4;color:#566573}
+  .p-high{background:#FADBD8;color:#922B21}
+  .p-medium{background:#FDEBD0;color:#784212}
+  .p-low{background:#D5F5E3;color:#1E8449}
+  .svc-badge{background:#EBF5FB;color:#1A5276;padding:2px 8px;border-radius:4px;font-size:11px;font-weight:600;margin-right:3px;display:inline-block;margin-bottom:2px}
   .days-overdue{color:#C0392B;font-weight:700}
-  .days-soon  {color:#B7791F;font-weight:600}
-  .days-ok    {color:var(--green)}
-  .days-done  {color:var(--gray400)}
+  .days-soon{color:#B7791F;font-weight:600}
+  .days-ok{color:var(--green)}
+  .days-done{color:var(--gray400)}
 
-  /* ── SECTION HEADER ── */
+  /* SECTION HEADER */
   .section-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:16px}
   .section-title{font-size:16px;font-weight:700;color:var(--navy)}
   .section-sub{font-size:12px;color:var(--gray400);margin-top:2px}
 
-  /* ── SELECTOR ROW ── */
-  .selector-row{background:#fff;border-radius:var(--radius);padding:16px 20px;box-shadow:var(--shadow);margin-bottom:16px;display:flex;align-items:center;gap:16px}
+  /* SELECTOR ROW */
+  .selector-row{background:#fff;border-radius:var(--radius);padding:16px 20px;box-shadow:var(--shadow);margin-bottom:16px;display:flex;align-items:center;gap:16px;flex-wrap:wrap}
   .selector-row label{font-size:13px;font-weight:700;color:var(--navy)}
   .selector-row select{padding:8px 14px;border:2px solid var(--blue);border-radius:8px;font-size:13px;font-weight:600;color:var(--blue);background:#EBF5FB;outline:none;cursor:pointer}
   .mini-kpis{display:flex;gap:10px;margin-left:auto;flex-wrap:wrap}
@@ -125,28 +112,37 @@
   .mini-kpi .mk-val{font-size:18px;font-weight:800;color:var(--navy)}
   .mini-kpi .mk-label{font-size:10px;color:var(--gray400);text-transform:uppercase;font-weight:600}
 
-  /* ── EMPTY STATE ── */
+  /* EMPTY STATE */
   .empty-state{text-align:center;padding:60px 20px;color:var(--gray400)}
   .empty-state .icon{font-size:48px;margin-bottom:12px}
   .empty-state p{font-size:14px;margin-top:6px}
 
-  /* ── TODAY ALERT ── */
+  /* FOCUS HEADER */
   .focus-header{background:linear-gradient(135deg,#E94560,#c73652);border-radius:var(--radius);padding:20px 24px;margin-bottom:20px;color:#fff;display:flex;align-items:center;justify-content:space-between}
   .focus-header h2{font-size:18px;font-weight:800}
   .focus-header p{font-size:13px;opacity:.85;margin-top:4px}
   .focus-count{font-size:40px;font-weight:900;opacity:.9}
 
-  /* ── MODAL ── */
-  .overlay{position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:200;display:none;align-items:center;justify-content:center}
+  /* MANAGE CARDS */
+  .mgmt-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(290px,1fr));gap:16px;margin-top:4px}
+  .mgmt-card{background:#fff;border-radius:var(--radius);box-shadow:var(--shadow);padding:18px 20px;border-left:4px solid var(--blue)}
+  .mgmt-card.client-card{border-left-color:var(--teal)}
+  .mgmt-card-name{font-size:15px;font-weight:800;color:var(--navy);margin-bottom:6px}
+  .mgmt-card-meta{font-size:12px;color:var(--gray600);display:flex;flex-direction:column;gap:4px;margin-top:8px}
+  .mgmt-card-actions{display:flex;gap:8px;margin-top:12px;padding-top:12px;border-top:1px solid var(--gray100)}
+  .pos-badge{display:inline-block;padding:3px 10px;border-radius:20px;font-size:11px;font-weight:700;background:#EDE9FE;color:#5B21B6}
+  .dept-badge{display:inline-block;padding:3px 10px;border-radius:20px;font-size:11px;font-weight:700;background:#DBEAFE;color:#1E40AF;margin-left:6px}
+
+  /* MODAL */
+  .overlay{position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:300;display:none;align-items:center;justify-content:center;padding:16px}
   .overlay.open{display:flex}
-  .modal{background:#fff;border-radius:14px;width:620px;max-width:95vw;max-height:90vh;overflow-y:auto;box-shadow:var(--shadow-lg);animation:slideUp .2s ease}
+  .modal{background:#fff;border-radius:14px;width:600px;max-width:100%;max-height:90vh;overflow-y:auto;box-shadow:var(--shadow-lg);animation:slideUp .2s ease}
   @keyframes slideUp{from{transform:translateY(20px);opacity:0}to{transform:none;opacity:1}}
-  .modal-header{padding:20px 24px 16px;border-bottom:1px solid var(--gray200);display:flex;align-items:center;justify-content:space-between}
+  .modal-header{padding:20px 24px 16px;border-bottom:1px solid var(--gray200);display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;background:#fff;z-index:1}
   .modal-title{font-size:17px;font-weight:800;color:var(--navy)}
-  .modal-close{background:none;border:none;font-size:22px;cursor:pointer;color:var(--gray400);line-height:1;padding:2px 6px}
-  .modal-close:hover{color:var(--gray800)}
+  .modal-close{background:none;border:none;font-size:22px;cursor:pointer;color:var(--gray400);line-height:1;padding:2px 6px}.modal-close:hover{color:var(--gray800)}
   .modal-body{padding:20px 24px}
-  .modal-footer{padding:14px 24px;border-top:1px solid var(--gray200);display:flex;gap:10px;justify-content:flex-end}
+  .modal-footer{padding:14px 24px;border-top:1px solid var(--gray200);display:flex;gap:10px;justify-content:flex-end;position:sticky;bottom:0;background:#fff}
   .form-grid{display:grid;grid-template-columns:1fr 1fr;gap:14px}
   .form-group{display:flex;flex-direction:column;gap:5px}
   .form-group.full{grid-column:1/-1}
@@ -154,730 +150,775 @@
   .form-group input,.form-group select,.form-group textarea{padding:9px 12px;border:1.5px solid var(--gray200);border-radius:8px;font-size:13px;color:var(--gray800);outline:none;transition:border-color .15s;font-family:inherit}
   .form-group input:focus,.form-group select:focus,.form-group textarea:focus{border-color:var(--blue)}
   .form-group textarea{resize:vertical;min-height:70px}
+  .form-group input[readonly]{background:var(--gray50);color:var(--gray600)}
+  .add-new-row{display:none;flex-direction:row;gap:6px;margin-top:6px}
+  .add-new-row.show{display:flex}
+  .add-new-row input{flex:1;padding:7px 10px;border:1.5px solid var(--blue);border-radius:7px;font-size:13px;outline:none;font-family:inherit}
+  .add-new-row button{padding:7px 12px;background:var(--blue);color:#fff;border:none;border-radius:7px;cursor:pointer;font-size:12px;font-weight:600}
 
-  /* ── CONFIRM DIALOG ── */
-  .confirm-modal{background:#fff;border-radius:14px;width:400px;max-width:95vw;padding:28px 28px 20px;box-shadow:var(--shadow-lg);text-align:center}
-  .confirm-modal h3{font-size:18px;font-weight:800;color:var(--navy);margin-bottom:8px}
-  .confirm-modal p{font-size:13px;color:var(--gray600);margin-bottom:20px}
-  .confirm-modal .btn-danger{background:#C0392B;color:#fff}
-  .confirm-modal .btn-danger:hover{background:#a93226}
+  /* SERVICES CHECKBOXES */
+  .services-grid{display:flex;flex-wrap:wrap;gap:8px;margin-top:4px}
+  .svc-check{display:flex;align-items:center;gap:6px;padding:6px 14px;border:1.5px solid var(--gray200);border-radius:8px;cursor:pointer;font-size:13px;user-select:none;transition:all .15s}
+  .svc-check:hover{border-color:var(--blue);background:#EBF5FB}
+  .svc-check input{display:none}
+  .svc-check.checked{background:#EBF5FB;border-color:var(--blue);color:var(--blue);font-weight:700}
 
-  /* ── TOAST ── */
+  /* CONFIRM */
+  .confirm-box{background:#fff;border-radius:14px;width:400px;max-width:95vw;padding:28px 28px 22px;box-shadow:var(--shadow-lg);text-align:center}
+  .confirm-box h3{font-size:18px;font-weight:800;color:var(--navy);margin-bottom:8px}
+  .confirm-box p{font-size:13px;color:var(--gray600);margin-bottom:20px}
+  .btn-danger{background:#C0392B;color:#fff}.btn-danger:hover{background:#a93226}
+
+  /* TOAST */
   .toast{position:fixed;bottom:24px;right:24px;background:var(--navy);color:#fff;padding:12px 20px;border-radius:10px;font-size:13px;font-weight:600;z-index:999;transform:translateY(80px);opacity:0;transition:all .3s;box-shadow:var(--shadow-lg)}
   .toast.show{transform:none;opacity:1}
   .toast.success{background:var(--green)}
   .toast.error{background:#C0392B}
 
-  /* ── SCROLLBAR ── */
-  ::-webkit-scrollbar{width:6px;height:6px}
-  ::-webkit-scrollbar-track{background:transparent}
-  ::-webkit-scrollbar-thumb{background:var(--gray200);border-radius:3px}
-  ::-webkit-scrollbar-thumb:hover{background:var(--gray400)}
-
-  /* ── HAMBURGER ── */
+  /* HAMBURGER */
   .hamburger{display:none;flex-direction:column;gap:5px;cursor:pointer;padding:6px;border-radius:7px;background:var(--gray100);border:1px solid var(--gray200)}
   .hamburger span{display:block;width:20px;height:2px;background:var(--gray800);border-radius:2px;transition:all .25s}
   .hamburger.open span:nth-child(1){transform:translateY(7px) rotate(45deg)}
   .hamburger.open span:nth-child(2){opacity:0}
   .hamburger.open span:nth-child(3){transform:translateY(-7px) rotate(-45deg)}
-
-  /* Mobile sidebar overlay backdrop */
-  .sidebar-backdrop{display:none;position:fixed;inset:0;background:rgba(0,0,0,.45);z-index:99}
+  .sidebar-backdrop{display:none;position:fixed;inset:0;background:rgba(0,0,0,.45);z-index:199}
   .sidebar-backdrop.show{display:block}
 
-  /* ── RESPONSIVE ── */
-  @media(max-width:900px){
-    .kpi-grid{grid-template-columns:repeat(4,1fr)}
-    .form-grid{grid-template-columns:1fr}
-    .form-group.full{grid-column:1}
-  }
-  @media(max-width:768px){
-    .kpi-grid{grid-template-columns:repeat(2,1fr)}
-    /* Sidebar becomes overlay on mobile */
-    .sidebar{transform:translateX(-100%);transition:transform .28s cubic-bezier(.4,0,.2,1);z-index:200}
-    .sidebar.mobile-open{transform:translateX(0)}
-    .main{margin-left:0}
-    .hamburger{display:flex}
-    .topbar{padding:0 14px;gap:10px}
-    .search-box input{width:130px}
-    .content{padding:16px 14px}
-    /* Scrollable tables on mobile */
-    .table-wrap{overflow-x:auto;-webkit-overflow-scrolling:touch}
-    .task-table{min-width:720px}
-    .modal{width:95vw}
-    .selector-row{flex-wrap:wrap}
-    .mini-kpis{margin-left:0;width:100%}
-    .focus-header{flex-direction:column;gap:8px;text-align:center}
-    .focus-count{font-size:32px}
-    .filter-bar{gap:7px}
-    .filter-bar select{font-size:12px;padding:6px 8px}
-  }
-  @media(max-width:480px){
-    .kpi-grid{grid-template-columns:repeat(2,1fr)}
-    .kpi-value{font-size:22px}
-    .topbar-title{font-size:14px}
-    .search-box{display:none}
-    .btn{padding:7px 12px;font-size:12px}
-  }
-
+  ::-webkit-scrollbar{width:6px;height:6px}
+  ::-webkit-scrollbar-track{background:transparent}
+  ::-webkit-scrollbar-thumb{background:var(--gray200);border-radius:3px}
+  .tag{display:inline-block;padding:2px 8px;border-radius:4px;font-size:11px;font-weight:600;background:var(--gray100);color:var(--gray600)}
+  .divider{height:1px;background:var(--gray200);margin:20px 0}
   .row-actions{display:flex;gap:6px;opacity:0;transition:opacity .15s}
   tr:hover .row-actions{opacity:1}
-  .sort-icon{font-size:10px;margin-left:3px;opacity:.5}
-  .divider{height:1px;background:var(--gray200);margin:20px 0}
-  .tag{display:inline-block;padding:2px 8px;border-radius:4px;font-size:11px;font-weight:600;background:var(--gray100);color:var(--gray600)}
+  .auto-note{font-size:11px;color:var(--gray400);font-weight:400;text-transform:none;letter-spacing:0;margin-left:4px}
+
+  /* RESPONSIVE */
+  @media(max-width:900px){.kpi-grid{grid-template-columns:repeat(4,1fr)}.form-grid{grid-template-columns:1fr}.form-group.full{grid-column:1}}
+  @media(max-width:768px){
+    .kpi-grid{grid-template-columns:repeat(2,1fr)}
+    .sidebar{transform:translateX(-100%)}.sidebar.mobile-open{transform:translateX(0)}
+    .main{margin-left:0}.hamburger{display:flex}
+    .topbar{padding:0 14px;gap:10px}.search-box input{width:120px}
+    .content{padding:16px 14px}
+    .modal{width:95vw}.selector-row{flex-wrap:wrap}.mini-kpis{margin-left:0;width:100%}
+    .focus-header{flex-direction:column;gap:8px;text-align:center}.focus-count{font-size:32px}
+    .filter-bar{gap:7px}.filter-bar select{font-size:12px;padding:6px 8px}
+  }
+  @media(max-width:480px){.kpi-value{font-size:22px}.topbar-title{font-size:14px}.search-box{display:none}.btn{padding:7px 12px;font-size:12px}}
 </style>
 </head>
 <body>
 
-<!-- Mobile sidebar backdrop -->
 <div class="sidebar-backdrop" id="sidebar-backdrop" onclick="closeSidebar()"></div>
 
-<!-- SIDEBAR -->
 <aside class="sidebar" id="sidebar">
-  <div class="sidebar-logo">
-    <h1>88gravity</h1>
-    <span>Task Dashboard</span>
-  </div>
+  <div class="sidebar-logo"><h1>88gravity</h1><span>Task Dashboard</span></div>
   <nav class="sidebar-nav">
     <div class="nav-section">Overview</div>
-    <div class="nav-item active" onclick="showPage('dashboard')">
-      <span class="icon">📊</span> Dashboard
-    </div>
-    <div class="nav-item" onclick="showPage('today')">
-      <span class="icon">🎯</span> Today's Focus
-      <span class="badge" id="focus-badge">0</span>
-    </div>
+    <div class="nav-item active" onclick="showPage('dashboard')"><span class="icon">📊</span>Dashboard</div>
+    <div class="nav-item" onclick="showPage('today')"><span class="icon">🎯</span>Today's Focus<span class="badge" id="focus-badge">0</span></div>
     <div class="nav-section" style="margin-top:8px">Tasks</div>
-    <div class="nav-item" onclick="showPage('all')">
-      <span class="icon">📋</span> All Tasks
-    </div>
-    <div class="nav-item" onclick="showPage('client')">
-      <span class="icon">🏢</span> By Client
-    </div>
-    <div class="nav-item" onclick="showPage('assignee')">
-      <span class="icon">👤</span> By Assignee
-    </div>
+    <div class="nav-item" onclick="showPage('all')"><span class="icon">📋</span>All Tasks</div>
+    <div class="nav-item" onclick="showPage('client-view')"><span class="icon">🏢</span>By Client</div>
+    <div class="nav-item" onclick="showPage('assignee-view')"><span class="icon">👤</span>By Assignee</div>
+    <div class="nav-section" style="margin-top:8px">Manage</div>
+    <div class="nav-item" onclick="showPage('team')"><span class="icon">👥</span>Team</div>
+    <div class="nav-item" onclick="showPage('clients-mgmt')"><span class="icon">🤝</span>Clients</div>
   </nav>
-  <div class="sidebar-footer">
-    Adarsh Srivastava · Co-Founder<br>
-    <span style="color:rgba(255,255,255,.25)">88gravity.com</span>
-  </div>
+  <div class="sidebar-footer">Adarsh Srivastava · Co-Founder<br><span style="color:rgba(255,255,255,.25)">88gravity.com</span></div>
 </aside>
 
-<!-- MAIN -->
 <main class="main">
-  <!-- TOP BAR -->
   <header class="topbar">
-    <div class="hamburger" id="hamburger" onclick="toggleSidebar()">
-      <span></span><span></span><span></span>
-    </div>
+    <div class="hamburger" id="hamburger" onclick="toggleSidebar()"><span></span><span></span><span></span></div>
     <div class="topbar-title" id="page-title">Dashboard</div>
-    <div class="search-box">
-      <span>🔍</span>
-      <input type="text" id="search-input" placeholder="Search tasks…" oninput="applyFilters()"/>
-    </div>
-    <button class="btn btn-primary" onclick="openModal()">＋ Add Task</button>
+    <div class="search-box"><span>🔍</span><input type="text" id="search-input" placeholder="Search tasks…" oninput="applyFilters()"/></div>
+    <button class="btn btn-primary" onclick="openTaskModal()">＋ Add Task</button>
   </header>
 
   <div class="content">
 
-    <!-- ══════════ DASHBOARD PAGE ══════════ -->
+    <!-- DASHBOARD -->
     <div class="page active" id="page-dashboard">
       <div class="kpi-grid" id="kpi-grid"></div>
       <div class="divider"></div>
-      <div class="section-header">
-        <div>
-          <div class="section-title">All Tasks Overview</div>
-          <div class="section-sub">Full list — click a row to edit</div>
-        </div>
-      </div>
+      <div class="section-header"><div><div class="section-title">All Tasks Overview</div><div class="section-sub">Click any row to edit</div></div></div>
       <div class="table-wrap" id="dash-table-wrap"></div>
     </div>
 
-    <!-- ══════════ TODAY'S FOCUS PAGE ══════════ -->
+    <!-- TODAY -->
     <div class="page" id="page-today">
       <div class="focus-header">
-        <div>
-          <h2>🎯 Today's Focus</h2>
-          <p id="today-date-str"></p>
-          <p style="margin-top:4px;font-size:12px;opacity:.7">Overdue tasks + tasks due today</p>
-        </div>
+        <div><h2>🎯 Today's Focus</h2><p id="today-date-str"></p><p style="margin-top:4px;font-size:12px;opacity:.7">Overdue tasks + tasks due today</p></div>
         <div class="focus-count" id="focus-count">0</div>
       </div>
       <div class="table-wrap" id="today-table-wrap"></div>
     </div>
 
-    <!-- ══════════ ALL TASKS PAGE ══════════ -->
+    <!-- ALL TASKS -->
     <div class="page" id="page-all">
-      <div class="section-header">
-        <div>
-          <div class="section-title">All Tasks</div>
-          <div class="section-sub" id="all-sub"></div>
-        </div>
-      </div>
+      <div class="section-header"><div><div class="section-title">All Tasks</div><div class="section-sub" id="all-sub"></div></div></div>
       <div class="filter-bar">
         <span class="filter-label">Filter:</span>
-        <select id="f-status"   onchange="applyFilters()"><option value="">All Statuses</option></select>
+        <select id="f-status" onchange="applyFilters()"><option value="">All Statuses</option></select>
         <select id="f-priority" onchange="applyFilters()"><option value="">All Priorities</option></select>
-        <select id="f-dept"     onchange="applyFilters()"><option value="">All Departments</option></select>
+        <select id="f-dept" onchange="applyFilters()"><option value="">All Departments</option></select>
         <select id="f-assignee" onchange="applyFilters()"><option value="">All Assignees</option></select>
-        <select id="f-client"   onchange="applyFilters()"><option value="">All Clients</option></select>
+        <select id="f-client" onchange="applyFilters()"><option value="">All Clients</option></select>
         <button class="btn btn-secondary btn-sm" onclick="clearFilters()">Clear</button>
         <span class="active-count" id="all-count"></span>
       </div>
       <div class="table-wrap" id="all-table-wrap"></div>
     </div>
 
-    <!-- ══════════ BY CLIENT PAGE ══════════ -->
-    <div class="page" id="page-client">
+    <!-- BY CLIENT -->
+    <div class="page" id="page-client-view">
       <div class="selector-row">
         <label>Client / Project</label>
-        <select id="sel-client" onchange="renderClientPage()"></select>
+        <select id="sel-client" onchange="renderClientView()"></select>
         <div class="mini-kpis" id="client-kpis"></div>
       </div>
       <div class="table-wrap" id="client-table-wrap"></div>
     </div>
 
-    <!-- ══════════ BY ASSIGNEE PAGE ══════════ -->
-    <div class="page" id="page-assignee">
+    <!-- BY ASSIGNEE -->
+    <div class="page" id="page-assignee-view">
       <div class="selector-row">
         <label>Assignee</label>
-        <select id="sel-assignee" onchange="renderAssigneePage()"></select>
+        <select id="sel-assignee" onchange="renderAssigneeView()"></select>
         <div class="mini-kpis" id="assignee-kpis"></div>
       </div>
       <div class="table-wrap" id="assignee-table-wrap"></div>
     </div>
 
-  </div><!-- /content -->
+    <!-- TEAM -->
+    <div class="page" id="page-team">
+      <div class="section-header">
+        <div><div class="section-title">Team Members</div><div class="section-sub" id="team-sub"></div></div>
+        <button class="btn btn-blue" onclick="openAssigneeModal()">＋ Add Member</button>
+      </div>
+      <div class="mgmt-grid" id="team-grid"></div>
+    </div>
+
+    <!-- CLIENTS MGMT -->
+    <div class="page" id="page-clients-mgmt">
+      <div class="section-header">
+        <div><div class="section-title">Clients</div><div class="section-sub" id="clients-sub"></div></div>
+        <button class="btn btn-green" onclick="openClientModal()">＋ Add Client</button>
+      </div>
+      <div class="mgmt-grid" id="clients-grid"></div>
+    </div>
+
+  </div>
 </main>
 
-<!-- ══════════ TASK MODAL ══════════ -->
-<div class="overlay" id="modal-overlay" onclick="closeModal(event)">
-  <div class="modal" id="task-modal">
+<!-- TASK MODAL -->
+<div class="overlay" id="task-overlay" onclick="closeTaskModal(event)">
+  <div class="modal">
     <div class="modal-header">
-      <div class="modal-title" id="modal-title">Add New Task</div>
-      <button class="modal-close" onclick="closeModal(null,true)">✕</button>
+      <div class="modal-title" id="task-modal-title">Add New Task</div>
+      <button class="modal-close" onclick="closeTaskModal(null,true)">✕</button>
     </div>
     <div class="modal-body">
       <div class="form-grid">
-        <div class="form-group full">
-          <label>Task / Activity *</label>
-          <input type="text" id="f-task" placeholder="Describe the task…"/>
-        </div>
-        <div class="form-group">
-          <label>Department</label>
-          <select id="f-dept-modal">
-            <option value="">Select…</option>
-            <option>Client</option><option>Finance</option><option>Sales</option>
-            <option>HR</option><option>Team</option><option>Operations</option>
-            <option>Legal</option><option>Marketing</option>
-          </select>
-        </div>
+        <div class="form-group full"><label>Task / Activity *</label><input type="text" id="t-task" placeholder="Describe the task…"/></div>
         <div class="form-group">
           <label>Assignee</label>
-          <select id="f-assignee-modal">
-            <option value="">Select…</option>
-            <option>Adarsh</option><option>Kuldeep</option><option>Priya</option>
-            <option>Rahul</option><option>SEO Team</option><option>Content Team</option>
-            <option>Sales Team</option><option>Social Team</option><option>Dev Team</option>
-            <option>HR Team</option>
-          </select>
+          <select id="t-assignee" onchange="onAssigneeChange()"><option value="">Select assignee…</option></select>
+        </div>
+        <div class="form-group">
+          <label>Department <span class="auto-note">(auto from assignee)</span></label>
+          <input type="text" id="t-dept" placeholder="Auto-filled when assignee selected" readonly/>
         </div>
         <div class="form-group">
           <label>Client / Project</label>
-          <select id="f-client-modal">
-            <option value="">Select…</option>
-            <option>Enout</option><option>Tiaraa Kerala</option><option>Tiaraq Hotels</option>
-            <option>Colonelz</option><option>Chalk Studio</option><option>Catalyze</option>
-            <option>Mobility Infotech</option><option>SKIL Events</option><option>Neon Cloud</option>
-            <option>B2B Prospect</option><option>Prospect</option><option>Internal</option>
-          </select>
+          <select id="t-client"><option value="">Select client…</option></select>
         </div>
         <div class="form-group">
           <label>Priority</label>
-          <select id="f-priority-modal">
-            <option value="">Select…</option>
-            <option>High</option><option>Medium</option><option>Low</option>
-          </select>
+          <select id="t-priority"><option value="">Select…</option><option>High</option><option>Medium</option><option>Low</option></select>
         </div>
         <div class="form-group">
           <label>Deadline</label>
-          <input type="date" id="f-deadline"/>
+          <input type="date" id="t-deadline"/>
         </div>
         <div class="form-group">
           <label>Status</label>
-          <select id="f-status-modal">
-            <option>Not Started</option><option>Pending</option>
-            <option>In Progress</option><option>Done</option><option>Overdue</option>
-          </select>
+          <select id="t-status"><option>Not Started</option><option>Pending</option><option>In Progress</option><option>Done</option><option>Overdue</option></select>
         </div>
         <div class="form-group">
           <label>Added By</label>
-          <select id="f-added-by">
-            <option>Adarsh</option><option>Kuldeep</option>
-          </select>
+          <select id="t-added-by"><option>Adarsh</option><option>Kuldeep</option></select>
         </div>
-        <div class="form-group full">
-          <label>Remarks</label>
-          <textarea id="f-remarks" placeholder="Notes, context, or next steps…"></textarea>
-        </div>
+        <div class="form-group full"><label>Remarks</label><textarea id="t-remarks" placeholder="Notes, context, or next steps…"></textarea></div>
       </div>
     </div>
     <div class="modal-footer">
-      <button class="btn btn-secondary" onclick="closeModal(null,true)">Cancel</button>
+      <button class="btn btn-secondary" onclick="closeTaskModal(null,true)">Cancel</button>
       <button class="btn btn-primary" onclick="saveTask()">Save Task</button>
     </div>
   </div>
 </div>
 
-<!-- CONFIRM OVERLAY -->
-<div class="overlay" id="confirm-overlay" onclick="closeConfirm(event)">
-  <div class="confirm-modal">
-    <h3>Delete Task?</h3>
-    <p>This action cannot be undone.</p>
-    <div style="display:flex;gap:10px;justify-content:center">
-      <button class="btn btn-secondary" onclick="closeConfirm(null,true)">Cancel</button>
-      <button class="btn btn-danger confirm-modal" id="confirm-delete-btn">Delete</button>
+<!-- ASSIGNEE MODAL -->
+<div class="overlay" id="assignee-overlay" onclick="closeAssigneeModal(event)">
+  <div class="modal">
+    <div class="modal-header">
+      <div class="modal-title" id="assignee-modal-title">Add Team Member</div>
+      <button class="modal-close" onclick="closeAssigneeModal(null,true)">✕</button>
+    </div>
+    <div class="modal-body">
+      <div class="form-grid">
+        <div class="form-group full"><label>Full Name *</label><input type="text" id="a-name" placeholder="e.g. Priya Sharma"/></div>
+        <div class="form-group"><label>Email ID</label><input type="email" id="a-email" placeholder="name@88gravity.com"/></div>
+        <div class="form-group"><label>WhatsApp Number</label><input type="tel" id="a-whatsapp" placeholder="+91 98765 43210"/></div>
+        <div class="form-group">
+          <label>Department</label>
+          <select id="a-dept">
+            <option value="">Select…</option>
+            <option>Client</option><option>Finance</option><option>Sales</option><option>HR</option>
+            <option>Team</option><option>Operations</option><option>Legal</option><option>Marketing</option><option>Management</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label>Position</label>
+          <select id="a-position" onchange="handleNewPosition()">
+            <option value="">Select…</option>
+            <option>Co-founder</option><option>AVP</option><option>Manager</option>
+            <option>AM</option><option>TL</option><option>Executive</option>
+            <option value="__new__">➕ Add new position…</option>
+          </select>
+          <div class="add-new-row" id="new-position-wrap">
+            <input type="text" id="new-position-input" placeholder="Type new position name…"/>
+            <button onclick="confirmNewPosition()">Add</button>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-secondary" onclick="closeAssigneeModal(null,true)">Cancel</button>
+      <button class="btn btn-blue" onclick="saveAssignee()">Save Member</button>
     </div>
   </div>
 </div>
 
-<!-- TOAST -->
+<!-- CLIENT MODAL -->
+<div class="overlay" id="client-overlay" onclick="closeClientModal(event)">
+  <div class="modal">
+    <div class="modal-header">
+      <div class="modal-title" id="client-modal-title">Add Client</div>
+      <button class="modal-close" onclick="closeClientModal(null,true)">✕</button>
+    </div>
+    <div class="modal-body">
+      <div class="form-grid">
+        <div class="form-group full"><label>Client Name *</label><input type="text" id="c-name" placeholder="e.g. Enout Tech"/></div>
+        <div class="form-group full">
+          <label>Services Provided</label>
+          <div class="services-grid" id="services-grid"></div>
+          <div style="margin-top:10px">
+            <button class="btn btn-secondary btn-sm" onclick="toggleNewService()">➕ Add new service</button>
+            <div class="add-new-row" id="new-service-wrap" style="margin-top:8px">
+              <input type="text" id="new-service-input" placeholder="Type new service name…"/>
+              <button onclick="confirmNewService()">Add</button>
+            </div>
+          </div>
+        </div>
+        <div class="form-group full"><label>Website URL</label><input type="url" id="c-website" placeholder="https://example.com"/></div>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-secondary" onclick="closeClientModal(null,true)">Cancel</button>
+      <button class="btn btn-green" onclick="saveClient()">Save Client</button>
+    </div>
+  </div>
+</div>
+
+<!-- CONFIRM -->
+<div class="overlay" id="confirm-overlay" onclick="closeConfirm(event)">
+  <div class="confirm-box">
+    <h3 id="confirm-title">Delete?</h3>
+    <p id="confirm-msg">This action cannot be undone.</p>
+    <div style="display:flex;gap:10px;justify-content:center">
+      <button class="btn btn-secondary" onclick="closeConfirm(null,true)">Cancel</button>
+      <button class="btn btn-danger" id="confirm-ok-btn">Delete</button>
+    </div>
+  </div>
+</div>
+
 <div class="toast" id="toast"></div>
 
 <script>
-// ═══════════════════════════════════════════════════
-// DATA
-// ═══════════════════════════════════════════════════
-const DEFAULT_TASKS = [
-  {id:1,  dept:"Client",  task:"Follow up on MSA and SOW",               assignee:"Adarsh",       client:"Enout",            priority:"High",   deadline:"2026-06-04", remarks:"Sent proposal, awaiting signed docs",        status:"Pending",     addedBy:"Adarsh"},
-  {id:2,  dept:"Client",  task:"AI roadmap review — feedback pending",   assignee:"Adarsh",       client:"Enout",            priority:"High",   deadline:"2026-06-05", remarks:"Shared on last call",                       status:"Pending",     addedBy:"Adarsh"},
-  {id:3,  dept:"Client",  task:"Doctor video interview script approval", assignee:"Priya",        client:"Tiaraa Kerala",    priority:"High",   deadline:"2026-06-06", remarks:"Script drafted, awaiting sign-off",          status:"In Progress", addedBy:"Adarsh"},
-  {id:4,  dept:"Client",  task:"ORM escalation — negative review spike", assignee:"Priya",        client:"Colonelz",         priority:"High",   deadline:"2026-06-04", remarks:"5 new negative reviews this week",           status:"Pending",     addedBy:"Adarsh"},
-  {id:5,  dept:"Client",  task:"Content calendar — Q3 plan",            assignee:"Content Team", client:"Tiaraq Hotels",    priority:"Medium", deadline:"2026-06-10", remarks:"Q3 calendar due",                           status:"Not Started", addedBy:"Adarsh"},
-  {id:6,  dept:"Client",  task:"Monthly SEO report deck",               assignee:"SEO Team",     client:"Chalk Studio",     priority:"High",   deadline:"2026-06-08", remarks:"Data done, deck pending",                   status:"In Progress", addedBy:"Adarsh"},
-  {id:7,  dept:"Client",  task:"Monthly report — PPC + SEO",            assignee:"SEO Team",     client:"Mobility Infotech",priority:"High",   deadline:"2026-06-08", remarks:"Combined report",                           status:"In Progress", addedBy:"Adarsh"},
-  {id:8,  dept:"Client",  task:"Annual offsite approval",               assignee:"Priya",        client:"SKIL Events",      priority:"Low",    deadline:"2026-06-14", remarks:"Budget approval pending",                   status:"Not Started", addedBy:"Adarsh"},
-  {id:9,  dept:"Finance", task:"Payment follow-up — Invoice #88G-041",  assignee:"Adarsh",       client:"Colonelz",         priority:"High",   deadline:"2026-06-02", remarks:"30 days outstanding",                       status:"Overdue",     addedBy:"Adarsh"},
-  {id:10, dept:"Finance", task:"Invoice follow-up — Oct retainer",      assignee:"Adarsh",       client:"Catalyze",         priority:"High",   deadline:"2026-06-03", remarks:"Second reminder needed",                    status:"Overdue",     addedBy:"Adarsh"},
-  {id:11, dept:"Sales",   task:"Cost negotiation follow-up",            assignee:"Adarsh",       client:"Neon Cloud",       priority:"High",   deadline:"2026-06-05", remarks:"Last quote sent 3 days ago",                status:"Pending",     addedBy:"Adarsh"},
-  {id:12, dept:"Sales",   task:"Proposal follow-up — HRMS Product",     assignee:"Adarsh",       client:"B2B Prospect",     priority:"Medium", deadline:"2026-06-07", remarks:"Deck shared last week",                     status:"Pending",     addedBy:"Adarsh"},
-  {id:13, dept:"Sales",   task:"SEO audit deck — Montreal cleaning co", assignee:"SEO Team",     client:"Prospect",         priority:"Low",    deadline:"2026-06-14", remarks:"Audit deck to be shared",                   status:"Not Started", addedBy:"Adarsh"},
-  {id:14, dept:"Sales",   task:"Apollo.io lead list — Q3 targets",      assignee:"Sales Team",   client:"Internal",         priority:"Low",    deadline:"2026-06-11", remarks:"Tech HR Decision Makers segment",            status:"Not Started", addedBy:"Adarsh"},
-  {id:15, dept:"HR",      task:"Inside Sales Manager — shortlist CVs",  assignee:"Rahul",        client:"Internal",         priority:"Medium", deadline:"2026-06-07", remarks:"JD live on LinkedIn",                       status:"In Progress", addedBy:"Adarsh"},
-  {id:16, dept:"HR",      task:"Growth Coordinator hire",               assignee:"Rahul",        client:"Catalyze",         priority:"Medium", deadline:"2026-06-09", remarks:"2 candidates shortlisted",                  status:"In Progress", addedBy:"Adarsh"},
-  {id:17, dept:"HR",      task:"PIP 30-day check-in — Video Editor",   assignee:"Rahul",        client:"Internal",         priority:"Medium", deadline:"2026-06-11", remarks:"Scheduled for end of month",                status:"Not Started", addedBy:"Adarsh"},
-  {id:18, dept:"HR",      task:"R&R framework rollout — comms",         assignee:"Rahul",        client:"Internal",         priority:"Low",    deadline:"2026-06-18", remarks:"Framework approved",                        status:"Not Started", addedBy:"Adarsh"},
-  {id:19, dept:"Team",    task:"Zoho CRM integration status",           assignee:"Dev Team",     client:"Internal",         priority:"Medium", deadline:"2026-06-07", remarks:"Dependent on API access from client",       status:"Pending",     addedBy:"Adarsh"},
-  {id:20, dept:"Team",    task:"LinkedIn lead gen campaign — wk2 review",assignee:"Social Team", client:"Internal",         priority:"Medium", deadline:"2026-06-09", remarks:"Week 2 metrics due",                        status:"In Progress", addedBy:"Adarsh"},
+const SK_TASKS='88g_tasks_v4',SK_ASSIGNEES='88g_assignees_v1',SK_CLIENTS='88g_clients_v1',SK_POS='88g_positions_v1',SK_SVC='88g_services_v1';
+
+const DEFAULT_ASSIGNEES=[
+  {id:1,name:"Adarsh",email:"contact@88gravity.com",whatsapp:"",dept:"Management",position:"Co-founder"},
+  {id:2,name:"Kuldeep",email:"kuldeep@88gravity.com",whatsapp:"",dept:"Management",position:"AVP"},
+  {id:3,name:"Priya",email:"",whatsapp:"",dept:"Client",position:"Manager"},
+  {id:4,name:"Rahul",email:"",whatsapp:"",dept:"HR",position:"Manager"},
+  {id:5,name:"SEO Team",email:"",whatsapp:"",dept:"Client",position:"TL"},
+  {id:6,name:"Content Team",email:"",whatsapp:"",dept:"Client",position:"TL"},
+  {id:7,name:"Sales Team",email:"",whatsapp:"",dept:"Sales",position:"TL"},
+  {id:8,name:"Social Team",email:"",whatsapp:"",dept:"Team",position:"TL"},
+  {id:9,name:"Dev Team",email:"",whatsapp:"",dept:"Team",position:"TL"},
+  {id:10,name:"HR Team",email:"",whatsapp:"",dept:"HR",position:"TL"},
 ];
+const DEFAULT_CLIENTS=[
+  {id:1,name:"Enout",services:["SEO"],website:""},{id:2,name:"Tiaraa Kerala",services:["Social"],website:""},
+  {id:3,name:"Tiaraq Hotels",services:["SEO","Social"],website:""},{id:4,name:"Colonelz",services:["SEO","GMB"],website:""},
+  {id:5,name:"Chalk Studio",services:["SEO"],website:""},{id:6,name:"Catalyze",services:["SEO"],website:""},
+  {id:7,name:"Mobility Infotech",services:["SEO"],website:""},{id:8,name:"SKIL Events",services:["Social"],website:""},
+  {id:9,name:"Neon Cloud",services:["SEO"],website:""},{id:10,name:"B2B Prospect",services:[],website:""},
+  {id:11,name:"Prospect",services:[],website:""},{id:12,name:"Internal",services:[],website:""},
+];
+const DEFAULT_TASKS=[
+  {id:1,dept:"Client",task:"Follow up on MSA and SOW",assignee:"Adarsh",client:"Enout",priority:"High",deadline:"2026-06-04",remarks:"Sent proposal, awaiting signed docs",status:"Pending",addedBy:"Adarsh"},
+  {id:2,dept:"Client",task:"AI roadmap review — feedback pending",assignee:"Adarsh",client:"Enout",priority:"High",deadline:"2026-06-05",remarks:"Shared on last call",status:"Pending",addedBy:"Adarsh"},
+  {id:3,dept:"Client",task:"Doctor video interview script approval",assignee:"Priya",client:"Tiaraa Kerala",priority:"High",deadline:"2026-06-06",remarks:"Script drafted, awaiting sign-off",status:"In Progress",addedBy:"Adarsh"},
+  {id:4,dept:"Client",task:"ORM escalation — negative review spike",assignee:"Priya",client:"Colonelz",priority:"High",deadline:"2026-06-04",remarks:"5 new negative reviews this week",status:"Pending",addedBy:"Adarsh"},
+  {id:5,dept:"Client",task:"Content calendar — Q3 plan",assignee:"Content Team",client:"Tiaraq Hotels",priority:"Medium",deadline:"2026-06-10",remarks:"Q3 calendar due",status:"Not Started",addedBy:"Adarsh"},
+  {id:6,dept:"Client",task:"Monthly SEO report deck",assignee:"SEO Team",client:"Chalk Studio",priority:"High",deadline:"2026-06-08",remarks:"Data done, deck pending",status:"In Progress",addedBy:"Adarsh"},
+  {id:7,dept:"Client",task:"Monthly report — PPC + SEO",assignee:"SEO Team",client:"Mobility Infotech",priority:"High",deadline:"2026-06-08",remarks:"Combined report",status:"In Progress",addedBy:"Adarsh"},
+  {id:8,dept:"Client",task:"Annual offsite approval",assignee:"Priya",client:"SKIL Events",priority:"Low",deadline:"2026-06-14",remarks:"Budget approval pending",status:"Not Started",addedBy:"Adarsh"},
+  {id:9,dept:"Finance",task:"Payment follow-up — Invoice #88G-041",assignee:"Adarsh",client:"Colonelz",priority:"High",deadline:"2026-06-02",remarks:"30 days outstanding",status:"Overdue",addedBy:"Adarsh"},
+  {id:10,dept:"Finance",task:"Invoice follow-up — Oct retainer",assignee:"Adarsh",client:"Catalyze",priority:"High",deadline:"2026-06-03",remarks:"Second reminder needed",status:"Overdue",addedBy:"Adarsh"},
+  {id:11,dept:"Sales",task:"Cost negotiation follow-up",assignee:"Adarsh",client:"Neon Cloud",priority:"High",deadline:"2026-06-05",remarks:"Last quote sent 3 days ago",status:"Pending",addedBy:"Adarsh"},
+  {id:12,dept:"Sales",task:"Proposal follow-up — HRMS Product",assignee:"Adarsh",client:"B2B Prospect",priority:"Medium",deadline:"2026-06-07",remarks:"Deck shared last week",status:"Pending",addedBy:"Adarsh"},
+  {id:13,dept:"Sales",task:"SEO audit deck — Montreal cleaning co",assignee:"SEO Team",client:"Prospect",priority:"Low",deadline:"2026-06-14",remarks:"Audit deck to be shared",status:"Not Started",addedBy:"Adarsh"},
+  {id:14,dept:"Sales",task:"Apollo.io lead list — Q3 targets",assignee:"Sales Team",client:"Internal",priority:"Low",deadline:"2026-06-11",remarks:"Tech HR Decision Makers segment",status:"Not Started",addedBy:"Adarsh"},
+  {id:15,dept:"HR",task:"Inside Sales Manager — shortlist CVs",assignee:"Rahul",client:"Internal",priority:"Medium",deadline:"2026-06-07",remarks:"JD live on LinkedIn",status:"In Progress",addedBy:"Adarsh"},
+  {id:16,dept:"HR",task:"Growth Coordinator hire",assignee:"Rahul",client:"Catalyze",priority:"Medium",deadline:"2026-06-09",remarks:"2 candidates shortlisted",status:"In Progress",addedBy:"Adarsh"},
+  {id:17,dept:"HR",task:"PIP 30-day check-in — Video Editor",assignee:"Rahul",client:"Internal",priority:"Medium",deadline:"2026-06-11",remarks:"Scheduled for end of month",status:"Not Started",addedBy:"Adarsh"},
+  {id:18,dept:"HR",task:"R&R framework rollout — comms",assignee:"Rahul",client:"Internal",priority:"Low",deadline:"2026-06-18",remarks:"Framework approved",status:"Not Started",addedBy:"Adarsh"},
+  {id:19,dept:"Team",task:"Zoho CRM integration status",assignee:"Dev Team",client:"Internal",priority:"Medium",deadline:"2026-06-07",remarks:"Dependent on API access from client",status:"Pending",addedBy:"Adarsh"},
+  {id:20,dept:"Team",task:"LinkedIn lead gen campaign — wk2 review",assignee:"Social Team",client:"Internal",priority:"Medium",deadline:"2026-06-09",remarks:"Week 2 metrics due",status:"In Progress",addedBy:"Adarsh"},
+];
+const BASE_POSITIONS=["Co-founder","AVP","Manager","AM","TL","Executive"];
+const BASE_SERVICES=["SEO","GMB","AI SEO","Social"];
 
-let tasks = [];
-let editingId = null;
-const STORAGE_KEY = '88gravity_tasks_v4';
+let tasks=[],assignees=[],clients=[],customPositions=[],customServices=[];
+let editingTaskId=null,editingAssigneeId=null,editingClientId=null,confirmCallback=null;
+let currentPage='dashboard';
+const pageSort={dashboard:{col:null,dir:1},today:{col:'days',dir:1},all:{col:'days',dir:1},'client-view':{col:'days',dir:1},'assignee-view':{col:'days',dir:1}};
+const NAV_ORDER=['dashboard','today','all','client-view','assignee-view','team','clients-mgmt'];
 
-function loadTasks(){
-  const raw = localStorage.getItem(STORAGE_KEY);
-  tasks = raw ? JSON.parse(raw) : JSON.parse(JSON.stringify(DEFAULT_TASKS));
+function load(){
+  tasks=JSON.parse(localStorage.getItem(SK_TASKS)||'null')||JSON.parse(JSON.stringify(DEFAULT_TASKS));
+  assignees=JSON.parse(localStorage.getItem(SK_ASSIGNEES)||'null')||JSON.parse(JSON.stringify(DEFAULT_ASSIGNEES));
+  clients=JSON.parse(localStorage.getItem(SK_CLIENTS)||'null')||JSON.parse(JSON.stringify(DEFAULT_CLIENTS));
+  customPositions=JSON.parse(localStorage.getItem(SK_POS)||'[]');
+  customServices=JSON.parse(localStorage.getItem(SK_SVC)||'[]');
 }
-function saveTasks(){
-  localStorage.setItem(STORAGE_KEY, JSON.stringify(tasks));
-}
-function nextId(){
-  return tasks.length ? Math.max(...tasks.map(t=>t.id)) + 1 : 1;
-}
-function daysLeft(deadline){
-  if(!deadline) return null;
-  // Parse as local midnight to avoid UTC timezone shift
-  const dl = new Date(deadline + 'T00:00:00');
-  const today = new Date(); today.setHours(0,0,0,0);
-  return Math.round((dl - today) / 86400000);
-}
+function persist(key,val){localStorage.setItem(key,JSON.stringify(val));}
+function nextId(arr){return arr.length?Math.max(...arr.map(x=>x.id))+1:1;}
+function allPositions(){return [...BASE_POSITIONS,...customPositions];}
+function allServices(){return [...BASE_SERVICES,...customServices];}
+function getAssignee(name){return assignees.find(a=>a.name===name);}
 
-// ═══════════════════════════════════════════════════
-// BADGES
-// ═══════════════════════════════════════════════════
-function statusBadge(s){
-  const map = {'Overdue':'s-overdue','Pending':'s-pending','In Progress':'s-progress','Done':'s-done','Not Started':'s-notstart'};
-  return `<span class="badge ${map[s]||'s-notstart'}">${s}</span>`;
+// ── HELPERS ──
+function daysLeft(dl){
+  if(!dl) return null;
+  const d=new Date(dl+'T00:00:00'),t=new Date();t.setHours(0,0,0,0);
+  return Math.round((d-t)/86400000);
 }
-function priorityBadge(p){
-  const map = {'High':'p-high','Medium':'p-medium','Low':'p-low'};
-  return `<span class="badge ${map[p]||'p-low'}">${p||'—'}</span>`;
-}
+function daysLeftNum(t){if(t.status==='Done')return 99999;const d=daysLeft(t.deadline);return d===null?88888:d;}
+function fmtDate(d){return d?new Date(d+'T00:00:00').toLocaleDateString('en-IN',{day:'2-digit',month:'short',year:'numeric'}):'—';}
+function statusBadge(s){const m={Overdue:'s-overdue',Pending:'s-pending','In Progress':'s-progress',Done:'s-done','Not Started':'s-notstart'};return `<span class="badge ${m[s]||'s-notstart'}">${s}</span>`;}
+function priorityBadge(p){const m={High:'p-high',Medium:'p-medium',Low:'p-low'};return p?`<span class="badge ${m[p]||'p-low'}">${p}</span>`:'—';}
 function daysCell(t){
   if(t.status==='Done') return `<span class="days-done">✓ Done</span>`;
-  const d = daysLeft(t.deadline);
+  const d=daysLeft(t.deadline);
   if(d===null) return '—';
   if(d<0) return `<span class="days-overdue">${Math.abs(d)}d overdue</span>`;
   if(d===0) return `<span class="days-overdue">Today</span>`;
   if(d<=3) return `<span class="days-soon">in ${d}d</span>`;
   return `<span class="days-ok">in ${d}d</span>`;
 }
-function fmtDate(d){ return d ? new Date(d+'T00:00:00').toLocaleDateString('en-IN',{day:'2-digit',month:'short',year:'numeric'}) : '—'; }
 
-// ═══════════════════════════════════════════════════
-// TABLE BUILDER
-// ═══════════════════════════════════════════════════
-const COLS = [
-  {key:'task',     label:'Task / Activity',    sortable:true},
-  {key:'assignee', label:'Assignee',           sortable:true},
-  {key:'client',   label:'Client',             sortable:true},
-  {key:'dept',     label:'Department',         sortable:true},
-  {key:'priority', label:'Priority',           sortable:true},
-  {key:'deadline', label:'Deadline',           sortable:true},
-  {key:'status',   label:'Status',             sortable:true},
-  {key:'days',     label:'Days Left ↑',        sortable:true},
-  {key:'actions',  label:'',                   sortable:false},
+// ── TABLE ──
+const COLS=[
+  {key:'task',label:'Task / Activity',s:true},{key:'assignee',label:'Assignee',s:true},
+  {key:'client',label:'Client',s:true},{key:'dept',label:'Department',s:true},
+  {key:'priority',label:'Priority',s:true},{key:'deadline',label:'Deadline',s:true},
+  {key:'status',label:'Status',s:true},{key:'days',label:'Days Left',s:true},{key:'_',label:'',s:false}
 ];
-
-// Per-page sort state; default sort = Days Left ascending for task pages
-const pageSort = {
-  dashboard: {col:null,  dir:1},
-  today:     {col:'days', dir:1},
-  all:       {col:'days', dir:1},
-  client:    {col:'days', dir:1},
-  assignee:  {col:'days', dir:1},
-};
-let currentPage = 'dashboard';
-
-// Numeric value for sorting by days left (overdue = negative, done = pushed to end)
-function daysLeftNum(t){
-  if(t.status==='Done') return 99999;
-  const d = daysLeft(t.deadline);
-  if(d===null) return 88888;
-  return d;
-}
-
-function buildTable(rows, container, compact=false, page=currentPage){
-  if(!rows.length){
-    container.innerHTML = `<div class="empty-state"><div class="icon">📭</div><strong>No tasks found</strong><p>Try adjusting filters or add a new task.</p></div>`;
-    return;
-  }
-  const {col:sc, dir:sd} = pageSort[page] || {col:null,dir:1};
-  const colsToShow = compact ? COLS.filter(c=>c.key!=='dept') : COLS;
-
-  const ths = colsToShow.map(c=>{
-    if(!c.sortable) return `<th>${c.label}</th>`;
-    let lbl = c.label.replace(' ↑','').replace(' ↓','');
-    let cls = '';
-    if(sc===c.key){ cls = sd===1?'sorted-asc':'sorted-desc'; }
-    return `<th class="${cls}" onclick="setSort('${c.key}','${page}')">${lbl}</th>`;
+function buildTable(rows,container,compact,page){
+  page=page||currentPage;
+  if(!rows.length){container.innerHTML=`<div class="empty-state"><div class="icon">📭</div><strong>No tasks found</strong><p>Adjust filters or add a new task.</p></div>`;return;}
+  const {col:sc,dir:sd}=pageSort[page]||{col:null,dir:1};
+  const cols=compact?COLS.filter(c=>c.key!=='dept'):COLS;
+  const ths=cols.map(c=>{
+    if(!c.s) return `<th></th>`;
+    const cls=sc===c.key?(sd===1?'sorted-asc':'sorted-desc'):'';
+    return `<th class="${cls}" onclick="setSort('${c.key}','${page}')">${c.label}</th>`;
   }).join('');
-
-  const trs = rows.map(t=>`
-    <tr onclick="openModal(${t.id})" style="cursor:pointer">
-      <td>
-        <div class="task-name">${t.task}</div>
-        <div class="task-remarks">${t.remarks||''}</div>
-      </td>
-      <td><span class="tag">${t.assignee||'—'}</span></td>
-      <td>${t.client||'—'}</td>
-      ${compact?'':`<td><span class="tag">${t.dept||'—'}</span></td>`}
-      <td>${priorityBadge(t.priority)}</td>
-      <td style="white-space:nowrap">${fmtDate(t.deadline)}</td>
-      <td>${statusBadge(t.status)}</td>
-      <td>${daysCell(t)}</td>
-      <td>
-        <div class="row-actions" onclick="event.stopPropagation()">
-          <button class="btn-icon" title="Edit" onclick="openModal(${t.id})">✏️</button>
-          <button class="btn-icon" title="Delete" onclick="confirmDelete(${t.id})">🗑️</button>
-        </div>
-      </td>
-    </tr>`).join('');
-
-  container.innerHTML = `<table class="task-table"><thead><tr>${ths}</tr></thead><tbody>${trs}</tbody></table>`;
+  const trs=rows.map(t=>`<tr onclick="openTaskModal(${t.id})" style="cursor:pointer">
+    <td><div class="task-name">${t.task}</div><div class="task-remarks">${t.remarks||''}</div></td>
+    <td><span class="tag">${t.assignee||'—'}</span></td>
+    <td>${t.client||'—'}</td>
+    ${compact?'':`<td><span class="tag">${t.dept||'—'}</span></td>`}
+    <td>${priorityBadge(t.priority)}</td>
+    <td style="white-space:nowrap">${fmtDate(t.deadline)}</td>
+    <td>${statusBadge(t.status)}</td>
+    <td>${daysCell(t)}</td>
+    <td><div class="row-actions" onclick="event.stopPropagation()">
+      <button class="btn-icon" onclick="openTaskModal(${t.id})">✏️</button>
+      <button class="btn-icon" onclick="doConfirm('Delete task?','This cannot be undone.',()=>deleteTask(${t.id}))">🗑️</button>
+    </div></td></tr>`).join('');
+  container.innerHTML=`<table class="task-table"><thead><tr>${ths}</tr></thead><tbody>${trs}</tbody></table>`;
 }
-
-function setSort(col, page=currentPage){
-  const ps = pageSort[page];
-  if(ps.col===col) ps.dir*=-1; else{ ps.col=col; ps.dir=1; }
-  // Re-render the relevant page only
-  if(page==='all')      applyFilters();
-  else if(page==='today')    renderTodayFocus();
-  else if(page==='client')   renderClientPage();
-  else if(page==='assignee') renderAssigneePage();
+function setSort(col,page){
+  page=page||currentPage;
+  const ps=pageSort[page];if(!ps)return;
+  ps.col===col?ps.dir*=-1:(ps.col=col,ps.dir=1);
+  if(page==='all') applyFilters();
+  else if(page==='today') renderToday();
+  else if(page==='client-view') renderClientView();
+  else if(page==='assignee-view') renderAssigneeView();
   else renderDashboard();
 }
-
-function sorted(arr, page=currentPage){
-  const {col, dir} = pageSort[page] || {col:null,dir:1};
+function sorted(arr,page){
+  page=page||currentPage;
+  const {col,dir}=pageSort[page]||{col:null,dir:1};
   if(!col) return arr;
-  if(col==='days'){
-    return [...arr].sort((a,b)=>(daysLeftNum(a)-daysLeftNum(b))*dir);
-  }
-  return [...arr].sort((a,b)=>{
-    let va=a[col]||'', vb=b[col]||'';
-    if(col==='deadline'){ va=va||'9999'; vb=vb||'9999'; }
-    return va<vb?-dir:va>vb?dir:0;
-  });
+  if(col==='days') return [...arr].sort((a,b)=>(daysLeftNum(a)-daysLeftNum(b))*dir);
+  return [...arr].sort((a,b)=>{let va=a[col]||'',vb=b[col]||'';if(col==='deadline'){va=va||'9999';vb=vb||'9999';}return va<vb?-dir:va>vb?dir:0;});
 }
 
-// ═══════════════════════════════════════════════════
-// PAGES
-// ═══════════════════════════════════════════════════
-const PAGE_TITLES = {dashboard:'Dashboard',today:"Today's Focus",all:'All Tasks',client:'By Client',assignee:'By Assignee'};
-
+// ── SIDEBAR ──
 function toggleSidebar(){
-  const sb = document.getElementById('sidebar');
-  const hb = document.getElementById('hamburger');
-  const bd = document.getElementById('sidebar-backdrop');
-  const open = sb.classList.toggle('mobile-open');
-  hb.classList.toggle('open', open);
-  bd.classList.toggle('show', open);
+  const sb=document.getElementById('sidebar'),hb=document.getElementById('hamburger'),bd=document.getElementById('sidebar-backdrop');
+  const o=sb.classList.toggle('mobile-open');hb.classList.toggle('open',o);bd.classList.toggle('show',o);
 }
 function closeSidebar(){
   document.getElementById('sidebar').classList.remove('mobile-open');
   document.getElementById('hamburger').classList.remove('open');
   document.getElementById('sidebar-backdrop').classList.remove('show');
 }
-
+const PAGE_TITLES={dashboard:'Dashboard',today:"Today's Focus",all:'All Tasks','client-view':'By Client','assignee-view':'By Assignee',team:'Team','clients-mgmt':'Clients'};
 function showPage(id){
-  currentPage = id;
-  closeSidebar();
+  currentPage=id;closeSidebar();
   document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));
   document.getElementById('page-'+id).classList.add('active');
-  document.querySelectorAll('.nav-item').forEach(n=>n.classList.remove('active'));
-  document.querySelectorAll('.nav-item')[['dashboard','today','all','client','assignee'].indexOf(id)].classList.add('active');
-  document.getElementById('page-title').textContent = PAGE_TITLES[id];
-  if(id==='client') renderClientPage();
-  if(id==='assignee') renderAssigneePage();
-  if(id==='today') renderTodayFocus();
-  if(id==='all') applyFilters();
+  document.querySelectorAll('.nav-item').forEach((n,i)=>n.classList.toggle('active',NAV_ORDER[i]===id));
+  document.getElementById('page-title').textContent=PAGE_TITLES[id]||id;
+  if(id==='today') renderToday();
+  else if(id==='all'){populateFilters();applyFilters();}
+  else if(id==='client-view') renderClientView();
+  else if(id==='assignee-view') renderAssigneeView();
+  else if(id==='team') renderTeam();
+  else if(id==='clients-mgmt') renderClientsMgmt();
+  else renderDashboard();
 }
 
+// ── RENDER PAGES ──
 function renderDashboard(){
-  const today = new Date().setHours(0,0,0,0);
-  const counts = {total:tasks.length, overdue:0, dueToday:0, inProg:0, pending:0, notStart:0, done:0};
+  const tod=new Date().setHours(0,0,0,0);
+  const c={total:tasks.length,overdue:0,dueToday:0,inProg:0,pending:0,notStart:0,done:0};
   tasks.forEach(t=>{
-    if(t.status==='Overdue') counts.overdue++;
-    if(t.status==='Done') counts.done++;
-    if(t.status==='In Progress') counts.inProg++;
-    if(t.status==='Pending') counts.pending++;
-    if(t.status==='Not Started') counts.notStart++;
-    if(t.deadline && new Date(t.deadline).setHours(0,0,0,0)===today && t.status!=='Done') counts.dueToday++;
+    if(t.status==='Overdue')c.overdue++;if(t.status==='Done')c.done++;
+    if(t.status==='In Progress')c.inProg++;if(t.status==='Pending')c.pending++;
+    if(t.status==='Not Started')c.notStart++;
+    if(t.deadline&&new Date(t.deadline+'T00:00:00').setHours(0,0,0,0)===tod&&t.status!=='Done')c.dueToday++;
   });
-  document.getElementById('kpi-grid').innerHTML = `
-    <div class="kpi-card kpi-total"><div class="kpi-label">Total Tasks</div><div class="kpi-value">${counts.total}</div><div class="kpi-sub">across all projects</div></div>
-    <div class="kpi-card kpi-overdue"><div class="kpi-label">Overdue</div><div class="kpi-value">${counts.overdue}</div><div class="kpi-sub">needs attention</div></div>
-    <div class="kpi-card kpi-today"><div class="kpi-label">Due Today</div><div class="kpi-value">${counts.dueToday}</div><div class="kpi-sub">act now</div></div>
-    <div class="kpi-card kpi-prog"><div class="kpi-label">In Progress</div><div class="kpi-value">${counts.inProg}</div><div class="kpi-sub">active</div></div>
-    <div class="kpi-card kpi-pending"><div class="kpi-label">Pending</div><div class="kpi-value">${counts.pending}</div><div class="kpi-sub">awaiting action</div></div>
-    <div class="kpi-card kpi-ns"><div class="kpi-label">Not Started</div><div class="kpi-value">${counts.notStart}</div><div class="kpi-sub">queued</div></div>
-    <div class="kpi-card kpi-done"><div class="kpi-label">Done ✓</div><div class="kpi-value">${counts.done}</div><div class="kpi-sub">completed</div></div>
-  `;
-  buildTable(sorted(tasks,'dashboard'), document.getElementById('dash-table-wrap'), false, 'dashboard');
+  document.getElementById('kpi-grid').innerHTML=`
+    <div class="kpi-card kpi-total"><div class="kpi-label">Total Tasks</div><div class="kpi-value">${c.total}</div><div class="kpi-sub">all projects</div></div>
+    <div class="kpi-card kpi-overdue"><div class="kpi-label">Overdue</div><div class="kpi-value">${c.overdue}</div><div class="kpi-sub">needs attention</div></div>
+    <div class="kpi-card kpi-today"><div class="kpi-label">Due Today</div><div class="kpi-value">${c.dueToday}</div><div class="kpi-sub">act now</div></div>
+    <div class="kpi-card kpi-prog"><div class="kpi-label">In Progress</div><div class="kpi-value">${c.inProg}</div><div class="kpi-sub">active</div></div>
+    <div class="kpi-card kpi-pending"><div class="kpi-label">Pending</div><div class="kpi-value">${c.pending}</div><div class="kpi-sub">awaiting</div></div>
+    <div class="kpi-card kpi-ns"><div class="kpi-label">Not Started</div><div class="kpi-value">${c.notStart}</div><div class="kpi-sub">queued</div></div>
+    <div class="kpi-card kpi-done"><div class="kpi-label">Done ✓</div><div class="kpi-value">${c.done}</div><div class="kpi-sub">completed</div></div>`;
+  buildTable(sorted(tasks,'dashboard'),document.getElementById('dash-table-wrap'),false,'dashboard');
 }
-
-function renderTodayFocus(){
-  const todayStr = new Date().toLocaleDateString('en-IN',{weekday:'long',day:'numeric',month:'long',year:'numeric'});
-  document.getElementById('today-date-str').textContent = todayStr;
-  // Show: tasks with today's deadline + overdue tasks (past deadline or status=Overdue)
-  const urgent = tasks.filter(t=>{
-    if(t.status==='Done') return false;
-    const d = daysLeft(t.deadline);
-    return t.status==='Overdue' || (d!==null && d===0) || (d!==null && d<0);
-  });
-  document.getElementById('focus-count').textContent = urgent.length;
-  document.getElementById('focus-badge').textContent = urgent.length;
-  buildTable(sorted(urgent,'today'), document.getElementById('today-table-wrap'), false, 'today');
+function renderToday(){
+  document.getElementById('today-date-str').textContent=new Date().toLocaleDateString('en-IN',{weekday:'long',day:'numeric',month:'long',year:'numeric'});
+  const urgent=tasks.filter(t=>{if(t.status==='Done')return false;const d=daysLeft(t.deadline);return t.status==='Overdue'||(d!==null&&d<=0);});
+  document.getElementById('focus-count').textContent=urgent.length;
+  document.getElementById('focus-badge').textContent=urgent.length;
+  buildTable(sorted(urgent,'today'),document.getElementById('today-table-wrap'),false,'today');
 }
-
+function populateFilters(){
+  const fill=(id,arr,first)=>{const s=document.getElementById(id),cur=s.value;s.innerHTML=`<option value="">${first}</option>`;arr.forEach(v=>s.innerHTML+=`<option${v===cur?' selected':''}>${v}</option>`);};
+  fill('f-status',['Overdue','Pending','In Progress','Done','Not Started'],'All Statuses');
+  fill('f-priority',['High','Medium','Low'],'All Priorities');
+  fill('f-dept',[...new Set(tasks.map(t=>t.dept).filter(Boolean))].sort(),'All Departments');
+  fill('f-assignee',[...new Set(tasks.map(t=>t.assignee).filter(Boolean))].sort(),'All Assignees');
+  fill('f-client',[...new Set(tasks.map(t=>t.client).filter(Boolean))].sort(),'All Clients');
+}
 function applyFilters(){
-  const q  = document.getElementById('search-input').value.toLowerCase();
-  const fs = document.getElementById('f-status').value;
-  const fp = document.getElementById('f-priority').value;
-  const fd = document.getElementById('f-dept').value;
-  const fa = document.getElementById('f-assignee').value;
-  const fc = document.getElementById('f-client').value;
-  const filtered = tasks.filter(t=>{
-    if(q && !`${t.task} ${t.client} ${t.assignee} ${t.remarks}`.toLowerCase().includes(q)) return false;
-    if(fs && t.status!==fs) return false;
-    if(fp && t.priority!==fp) return false;
-    if(fd && t.dept!==fd) return false;
-    if(fa && t.assignee!==fa) return false;
-    if(fc && t.client!==fc) return false;
+  const q=document.getElementById('search-input').value.toLowerCase();
+  const fs=document.getElementById('f-status').value,fp=document.getElementById('f-priority').value;
+  const fd=document.getElementById('f-dept').value,fa=document.getElementById('f-assignee').value,fc=document.getElementById('f-client').value;
+  const filtered=tasks.filter(t=>{
+    if(q&&!`${t.task} ${t.client} ${t.assignee} ${t.remarks}`.toLowerCase().includes(q))return false;
+    if(fs&&t.status!==fs)return false;if(fp&&t.priority!==fp)return false;
+    if(fd&&t.dept!==fd)return false;if(fa&&t.assignee!==fa)return false;if(fc&&t.client!==fc)return false;
     return true;
   });
-  document.getElementById('all-count').textContent = `Showing ${filtered.length} of ${tasks.length} tasks`;
-  document.getElementById('all-sub').textContent = `${filtered.length} task${filtered.length!==1?'s':''} shown`;
-  buildTable(sorted(filtered,'all'), document.getElementById('all-table-wrap'), false, 'all');
+  document.getElementById('all-count').textContent=`Showing ${filtered.length} of ${tasks.length}`;
+  document.getElementById('all-sub').textContent=`${filtered.length} task${filtered.length!==1?'s':''} shown`;
+  buildTable(sorted(filtered,'all'),document.getElementById('all-table-wrap'),false,'all');
 }
+function clearFilters(){['f-status','f-priority','f-dept','f-assignee','f-client'].forEach(id=>document.getElementById(id).value='');document.getElementById('search-input').value='';applyFilters();}
 
-function clearFilters(){
-  ['f-status','f-priority','f-dept','f-assignee','f-client'].forEach(id=>document.getElementById(id).value='');
-  document.getElementById('search-input').value='';
-  applyFilters();
+function renderClientView(){
+  const sel=document.getElementById('sel-client');
+  const names=[...new Set(tasks.map(t=>t.client).filter(Boolean))].sort();
+  const cur=sel.value||names[0]||'';
+  sel.innerHTML=names.map(n=>`<option${n===cur?' selected':''}>${n}</option>`).join('');
+  const f=tasks.filter(t=>t.client===cur);
+  renderMiniKpis('client-kpis',f);buildTable(sorted(f,'client-view'),document.getElementById('client-table-wrap'),true,'client-view');
 }
-
-function populateFilters(){
-  const statuses  = ['Overdue','Pending','In Progress','Done','Not Started'];
-  const priorities= ['High','Medium','Low'];
-  const depts     = [...new Set(tasks.map(t=>t.dept).filter(Boolean))].sort();
-  const assignees = [...new Set(tasks.map(t=>t.assignee).filter(Boolean))].sort();
-  const clients   = [...new Set(tasks.map(t=>t.client).filter(Boolean))].sort();
-  const fill = (id,arr)=>{
-    const sel=document.getElementById(id);
-    const cur=sel.value;
-    sel.innerHTML=`<option value="">${sel.querySelector('option').textContent}</option>`;
-    arr.forEach(v=>sel.innerHTML+=`<option${v===cur?' selected':''}>${v}</option>`);
-  };
-  fill('f-status',statuses); fill('f-priority',priorities);
-  fill('f-dept',depts); fill('f-assignee',assignees); fill('f-client',clients);
+function renderAssigneeView(){
+  const sel=document.getElementById('sel-assignee');
+  const names=[...new Set(tasks.map(t=>t.assignee).filter(Boolean))].sort();
+  const cur=sel.value||names[0]||'';
+  sel.innerHTML=names.map(n=>`<option${n===cur?' selected':''}>${n}</option>`).join('');
+  const f=tasks.filter(t=>t.assignee===cur);
+  renderMiniKpis('assignee-kpis',f);buildTable(sorted(f,'assignee-view'),document.getElementById('assignee-table-wrap'),true,'assignee-view');
 }
-
-function renderClientPage(){
-  const sel = document.getElementById('sel-client');
-  const clients = [...new Set(tasks.map(t=>t.client).filter(Boolean))].sort();
-  const cur = sel.value || clients[0];
-  sel.innerHTML = clients.map(c=>`<option${c===cur?' selected':''}>${c}</option>`).join('');
-  const filtered = tasks.filter(t=>t.client===cur);
-  renderMiniKpis('client-kpis', filtered);
-  buildTable(sorted(filtered,'client'), document.getElementById('client-table-wrap'), true, 'client');
-}
-
-function renderAssigneePage(){
-  const sel = document.getElementById('sel-assignee');
-  const people = [...new Set(tasks.map(t=>t.assignee).filter(Boolean))].sort();
-  const cur = sel.value || people[0];
-  sel.innerHTML = people.map(p=>`<option${p===cur?' selected':''}>${p}</option>`).join('');
-  const filtered = tasks.filter(t=>t.assignee===cur);
-  renderMiniKpis('assignee-kpis', filtered);
-  buildTable(sorted(filtered,'assignee'), document.getElementById('assignee-table-wrap'), true, 'assignee');
-}
-
-function renderMiniKpis(containerId, rows){
-  const ov = rows.filter(t=>t.status==='Overdue').length;
-  const ip = rows.filter(t=>t.status==='In Progress').length;
-  const pe = rows.filter(t=>t.status==='Pending').length;
-  const dn = rows.filter(t=>t.status==='Done').length;
-  document.getElementById(containerId).innerHTML = `
+function renderMiniKpis(id,rows){
+  const ov=rows.filter(t=>t.status==='Overdue').length,ip=rows.filter(t=>t.status==='In Progress').length;
+  const pe=rows.filter(t=>t.status==='Pending').length,dn=rows.filter(t=>t.status==='Done').length;
+  document.getElementById(id).innerHTML=`
     <div class="mini-kpi"><div class="mk-val">${rows.length}</div><div class="mk-label">Total</div></div>
     <div class="mini-kpi"><div class="mk-val" style="color:#C0392B">${ov}</div><div class="mk-label">Overdue</div></div>
     <div class="mini-kpi"><div class="mk-val" style="color:#1A5276">${ip}</div><div class="mk-label">In Prog</div></div>
     <div class="mini-kpi"><div class="mk-val" style="color:#856404">${pe}</div><div class="mk-label">Pending</div></div>
-    <div class="mini-kpi"><div class="mk-val" style="color:#1E8449">${dn}</div><div class="mk-label">Done</div></div>
-  `;
+    <div class="mini-kpi"><div class="mk-val" style="color:#1E8449">${dn}</div><div class="mk-label">Done</div></div>`;
 }
 
-function renderAll(){
-  renderDashboard();
-  renderTodayFocus();
-  applyFilters();
-  populateFilters();
+// ── TEAM PAGE ──
+function renderTeam(){
+  document.getElementById('team-sub').textContent=`${assignees.length} member${assignees.length!==1?'s':''}`;
+  if(!assignees.length){document.getElementById('team-grid').innerHTML=`<div class="empty-state"><div class="icon">👥</div><strong>No team members yet</strong><p>Click "+ Add Member" to get started.</p></div>`;return;}
+  document.getElementById('team-grid').innerHTML=assignees.map(a=>{
+    const tc=tasks.filter(t=>t.assignee===a.name).length;
+    return `<div class="mgmt-card">
+      <div class="mgmt-card-name">👤 ${a.name}</div>
+      <span class="pos-badge">${a.position||'—'}</span><span class="dept-badge">${a.dept||'—'}</span>
+      <div class="mgmt-card-meta">
+        ${a.email?`<span>📧 ${a.email}</span>`:''}
+        ${a.whatsapp?`<span>📱 ${a.whatsapp}</span>`:''}
+        <span>📋 ${tc} task${tc!==1?'s':''} assigned</span>
+      </div>
+      <div class="mgmt-card-actions">
+        <button class="btn btn-secondary btn-sm" onclick="openAssigneeModal(${a.id})">✏️ Edit</button>
+        <button class="btn btn-sm" style="background:#FFE0E0;color:#C0392B;border:none;cursor:pointer;border-radius:7px;padding:5px 11px;font-size:12px;font-weight:600" onclick="doConfirm('Remove member?','${a.name} will be removed.',()=>deleteAssignee(${a.id}))">🗑️ Remove</button>
+      </div>
+    </div>`;
+  }).join('');
 }
 
-// ═══════════════════════════════════════════════════
-// MODAL
-// ═══════════════════════════════════════════════════
-function openModal(id=null){
-  editingId = id;
-  const modal = document.getElementById('task-modal');
-  document.getElementById('modal-title').textContent = id ? 'Edit Task' : 'Add New Task';
+// ── CLIENTS MGMT PAGE ──
+function renderClientsMgmt(){
+  document.getElementById('clients-sub').textContent=`${clients.length} client${clients.length!==1?'s':''}`;
+  if(!clients.length){document.getElementById('clients-grid').innerHTML=`<div class="empty-state"><div class="icon">🤝</div><strong>No clients yet</strong></div>`;return;}
+  document.getElementById('clients-grid').innerHTML=clients.map(c=>{
+    const tc=tasks.filter(t=>t.client===c.name).length;
+    const svcs=(c.services||[]).map(s=>`<span class="svc-badge">${s}</span>`).join('');
+    return `<div class="mgmt-card client-card">
+      <div class="mgmt-card-name">🏢 ${c.name}</div>
+      <div style="margin:6px 0 2px">${svcs||'<span style="color:var(--gray400);font-size:12px">No services</span>'}</div>
+      <div class="mgmt-card-meta">
+        ${c.website?`<span>🌐 <a href="${c.website}" target="_blank" onclick="event.stopPropagation()" style="color:var(--blue)">${c.website}</a></span>`:''}
+        <span>📋 ${tc} task${tc!==1?'s':''}</span>
+      </div>
+      <div class="mgmt-card-actions">
+        <button class="btn btn-secondary btn-sm" onclick="openClientModal(${c.id})">✏️ Edit</button>
+        <button class="btn btn-sm" style="background:#FFE0E0;color:#C0392B;border:none;cursor:pointer;border-radius:7px;padding:5px 11px;font-size:12px;font-weight:600" onclick="doConfirm('Remove client?','${c.name} will be removed.',()=>deleteClient(${c.id}))">🗑️ Remove</button>
+      </div>
+    </div>`;
+  }).join('');
+}
 
+// ── TASK MODAL ──
+function populateTaskDropdowns(){
+  const asel=document.getElementById('t-assignee'),cur=asel.value;
+  asel.innerHTML=`<option value="">Select assignee…</option>`+assignees.map(a=>`<option${a.name===cur?' selected':''}>${a.name}</option>`).join('');
+  const csel=document.getElementById('t-client'),cur2=csel.value;
+  csel.innerHTML=`<option value="">Select client…</option>`+clients.map(c=>`<option${c.name===cur2?' selected':''}>${c.name}</option>`).join('');
+}
+function onAssigneeChange(){
+  const name=document.getElementById('t-assignee').value;
+  const a=getAssignee(name);
+  document.getElementById('t-dept').value=a?a.dept:'';
+}
+function openTaskModal(id){
+  editingTaskId=id||null;
+  document.getElementById('task-modal-title').textContent=id?'Edit Task':'Add New Task';
+  populateTaskDropdowns();
   if(id){
-    const t = tasks.find(x=>x.id===id);
-    document.getElementById('f-task').value         = t.task||'';
-    document.getElementById('f-dept-modal').value   = t.dept||'';
-    document.getElementById('f-assignee-modal').value=t.assignee||'';
-    document.getElementById('f-client-modal').value = t.client||'';
-    document.getElementById('f-priority-modal').value=t.priority||'';
-    document.getElementById('f-deadline').value     = t.deadline||'';
-    document.getElementById('f-status-modal').value = t.status||'Not Started';
-    document.getElementById('f-added-by').value     = t.addedBy||'Adarsh';
-    document.getElementById('f-remarks').value      = t.remarks||'';
+    const t=tasks.find(x=>x.id===id);
+    document.getElementById('t-task').value=t.task||'';
+    document.getElementById('t-assignee').value=t.assignee||'';
+    document.getElementById('t-dept').value=t.dept||'';
+    document.getElementById('t-client').value=t.client||'';
+    document.getElementById('t-priority').value=t.priority||'';
+    document.getElementById('t-deadline').value=t.deadline||'';
+    document.getElementById('t-status').value=t.status||'Not Started';
+    document.getElementById('t-added-by').value=t.addedBy||'Adarsh';
+    document.getElementById('t-remarks').value=t.remarks||'';
   } else {
-    document.getElementById('f-task').value='';
-    document.getElementById('f-dept-modal').value='';
-    document.getElementById('f-assignee-modal').value='';
-    document.getElementById('f-client-modal').value='';
-    document.getElementById('f-priority-modal').value='';
-    document.getElementById('f-deadline').value='';
-    document.getElementById('f-status-modal').value='Not Started';
-    document.getElementById('f-added-by').value='Adarsh';
-    document.getElementById('f-remarks').value='';
+    ['t-task','t-dept','t-deadline','t-remarks'].forEach(i=>document.getElementById(i).value='');
+    ['t-assignee','t-client','t-priority'].forEach(i=>document.getElementById(i).value='');
+    document.getElementById('t-status').value='Not Started';
+    document.getElementById('t-added-by').value='Adarsh';
   }
-  document.getElementById('modal-overlay').classList.add('open');
-  setTimeout(()=>document.getElementById('f-task').focus(),100);
+  document.getElementById('task-overlay').classList.add('open');
+  setTimeout(()=>document.getElementById('t-task').focus(),100);
 }
-
-function closeModal(e, force=false){
-  if(!force && e && e.target!==document.getElementById('modal-overlay')) return;
-  document.getElementById('modal-overlay').classList.remove('open');
-  editingId = null;
+function closeTaskModal(e,force){
+  if(!force&&e&&e.target!==document.getElementById('task-overlay'))return;
+  document.getElementById('task-overlay').classList.remove('open');editingTaskId=null;
 }
-
 function saveTask(){
-  const task = document.getElementById('f-task').value.trim();
-  if(!task){ showToast('Task name is required','error'); return; }
-  const obj = {
-    task,
-    dept:     document.getElementById('f-dept-modal').value,
-    assignee: document.getElementById('f-assignee-modal').value,
-    client:   document.getElementById('f-client-modal').value,
-    priority: document.getElementById('f-priority-modal').value,
-    deadline: document.getElementById('f-deadline').value,
-    status:   document.getElementById('f-status-modal').value,
-    addedBy:  document.getElementById('f-added-by').value,
-    remarks:  document.getElementById('f-remarks').value.trim(),
-  };
-  if(editingId){
-    const idx = tasks.findIndex(t=>t.id===editingId);
-    tasks[idx] = {...tasks[idx], ...obj};
-    showToast('Task updated ✓','success');
+  const task=document.getElementById('t-task').value.trim();
+  if(!task){showToast('Task name is required','error');return;}
+  const obj={task,assignee:document.getElementById('t-assignee').value,dept:document.getElementById('t-dept').value,
+    client:document.getElementById('t-client').value,priority:document.getElementById('t-priority').value,
+    deadline:document.getElementById('t-deadline').value,status:document.getElementById('t-status').value,
+    addedBy:document.getElementById('t-added-by').value,remarks:document.getElementById('t-remarks').value.trim()};
+  if(editingTaskId){const i=tasks.findIndex(t=>t.id===editingTaskId);tasks[i]={...tasks[i],...obj};showToast('Task updated ✓','success');}
+  else{tasks.push({id:nextId(tasks),...obj});showToast('Task added ✓','success');}
+  persist(SK_TASKS,tasks);closeTaskModal(null,true);renderAll();
+}
+function deleteTask(id){tasks=tasks.filter(t=>t.id!==id);persist(SK_TASKS,tasks);showToast('Task deleted');renderAll();}
+
+// ── ASSIGNEE MODAL ──
+function buildPositionSelect(selected){
+  const psel=document.getElementById('a-position');
+  psel.innerHTML=`<option value="">Select…</option>`+allPositions().map(p=>`<option${p===selected?' selected':''}>${p}</option>`).join('')+`<option value="__new__">➕ Add new position…</option>`;
+}
+function openAssigneeModal(id){
+  editingAssigneeId=id||null;
+  document.getElementById('assignee-modal-title').textContent=id?'Edit Team Member':'Add Team Member';
+  document.getElementById('new-position-wrap').classList.remove('show');
+  document.getElementById('new-position-input').value='';
+  if(id){
+    const a=assignees.find(x=>x.id===id);
+    document.getElementById('a-name').value=a.name||'';
+    document.getElementById('a-email').value=a.email||'';
+    document.getElementById('a-whatsapp').value=a.whatsapp||'';
+    document.getElementById('a-dept').value=a.dept||'';
+    buildPositionSelect(a.position||'');
   } else {
-    tasks.push({id:nextId(), ...obj});
-    showToast('Task added ✓','success');
+    ['a-name','a-email','a-whatsapp'].forEach(i=>document.getElementById(i).value='');
+    document.getElementById('a-dept').value='';buildPositionSelect('');
   }
-  saveTasks(); closeModal(null,true); renderAll();
+  document.getElementById('assignee-overlay').classList.add('open');
+  setTimeout(()=>document.getElementById('a-name').focus(),100);
 }
+function closeAssigneeModal(e,force){
+  if(!force&&e&&e.target!==document.getElementById('assignee-overlay'))return;
+  document.getElementById('assignee-overlay').classList.remove('open');editingAssigneeId=null;
+}
+function handleNewPosition(){
+  const v=document.getElementById('a-position').value;
+  document.getElementById('new-position-wrap').classList.toggle('show',v==='__new__');
+  if(v==='__new__') setTimeout(()=>document.getElementById('new-position-input').focus(),50);
+}
+function confirmNewPosition(){
+  const val=document.getElementById('new-position-input').value.trim();
+  if(!val)return;
+  if(!customPositions.includes(val))customPositions.push(val);
+  persist(SK_POS,customPositions);
+  buildPositionSelect(val);
+  document.getElementById('new-position-wrap').classList.remove('show');
+  document.getElementById('new-position-input').value='';
+}
+function saveAssignee(){
+  const name=document.getElementById('a-name').value.trim();
+  if(!name){showToast('Name is required','error');return;}
+  let pos=document.getElementById('a-position').value;
+  if(pos==='__new__'){pos=document.getElementById('new-position-input').value.trim();}
+  const obj={name,email:document.getElementById('a-email').value.trim(),whatsapp:document.getElementById('a-whatsapp').value.trim(),dept:document.getElementById('a-dept').value,position:pos};
+  if(editingAssigneeId){
+    const i=assignees.findIndex(a=>a.id===editingAssigneeId);
+    const old=assignees[i].name;assignees[i]={...assignees[i],...obj};
+    if(old!==name){tasks.forEach(t=>{if(t.assignee===old)t.assignee=name;});persist(SK_TASKS,tasks);}
+    showToast('Member updated ✓','success');
+  } else {assignees.push({id:nextId(assignees),...obj});showToast('Member added ✓','success');}
+  persist(SK_ASSIGNEES,assignees);closeAssigneeModal(null,true);renderAll();
+}
+function deleteAssignee(id){assignees=assignees.filter(a=>a.id!==id);persist(SK_ASSIGNEES,assignees);renderTeam();showToast('Member removed');}
 
-// ═══════════════════════════════════════════════════
-// DELETE
-// ═══════════════════════════════════════════════════
-let deleteId = null;
-function confirmDelete(id){
-  deleteId=id;
-  document.getElementById('confirm-overlay').classList.add('open');
+// ── CLIENT MODAL ──
+function buildServicesGrid(selected){
+  document.getElementById('services-grid').innerHTML=allServices().map(s=>{
+    const on=selected.includes(s);
+    return `<label class="svc-check${on?' checked':''}" onclick="toggleSvc(this)"><input type="checkbox" value="${s}"${on?' checked':''}>${s}</label>`;
+  }).join('');
 }
-function closeConfirm(e, force=false){
-  if(!force && e && e.target!==document.getElementById('confirm-overlay')) return;
-  document.getElementById('confirm-overlay').classList.remove('open');
-  deleteId=null;
+function toggleSvc(el){el.classList.toggle('checked');el.querySelector('input').checked=el.classList.contains('checked');}
+function toggleNewService(){document.getElementById('new-service-wrap').classList.toggle('show');if(document.getElementById('new-service-wrap').classList.contains('show'))setTimeout(()=>document.getElementById('new-service-input').focus(),50);}
+function confirmNewService(){
+  const val=document.getElementById('new-service-input').value.trim();if(!val)return;
+  if(!customServices.includes(val))customServices.push(val);persist(SK_SVC,customServices);
+  const sel=[...document.querySelectorAll('#services-grid .svc-check.checked')].map(el=>el.querySelector('input').value);
+  buildServicesGrid([...sel,val]);
+  document.getElementById('new-service-input').value='';document.getElementById('new-service-wrap').classList.remove('show');
 }
-document.getElementById('confirm-delete-btn').onclick = ()=>{
-  if(deleteId){
-    tasks = tasks.filter(t=>t.id!==deleteId);
-    saveTasks(); closeConfirm(null,true);
-    showToast('Task deleted','success'); renderAll();
-  }
-};
+function openClientModal(id){
+  editingClientId=id||null;
+  document.getElementById('client-modal-title').textContent=id?'Edit Client':'Add Client';
+  document.getElementById('new-service-wrap').classList.remove('show');
+  document.getElementById('new-service-input').value='';
+  if(id){const c=clients.find(x=>x.id===id);document.getElementById('c-name').value=c.name||'';document.getElementById('c-website').value=c.website||'';buildServicesGrid(c.services||[]);}
+  else{document.getElementById('c-name').value='';document.getElementById('c-website').value='';buildServicesGrid([]);}
+  document.getElementById('client-overlay').classList.add('open');
+  setTimeout(()=>document.getElementById('c-name').focus(),100);
+}
+function closeClientModal(e,force){
+  if(!force&&e&&e.target!==document.getElementById('client-overlay'))return;
+  document.getElementById('client-overlay').classList.remove('open');editingClientId=null;
+}
+function saveClient(){
+  const name=document.getElementById('c-name').value.trim();if(!name){showToast('Client name is required','error');return;}
+  const services=[...document.querySelectorAll('#services-grid .svc-check.checked')].map(el=>el.querySelector('input').value);
+  const obj={name,services,website:document.getElementById('c-website').value.trim()};
+  if(editingClientId){
+    const i=clients.findIndex(c=>c.id===editingClientId);const old=clients[i].name;clients[i]={...clients[i],...obj};
+    if(old!==name){tasks.forEach(t=>{if(t.client===old)t.client=name;});persist(SK_TASKS,tasks);}
+    showToast('Client updated ✓','success');
+  } else {clients.push({id:nextId(clients),...obj});showToast('Client added ✓','success');}
+  persist(SK_CLIENTS,clients);closeClientModal(null,true);renderAll();
+}
+function deleteClient(id){clients=clients.filter(c=>c.id!==id);persist(SK_CLIENTS,clients);renderClientsMgmt();showToast('Client removed');}
 
-// ═══════════════════════════════════════════════════
-// TOAST
-// ═══════════════════════════════════════════════════
-function showToast(msg, type=''){
-  const t = document.getElementById('toast');
-  t.textContent=msg; t.className='toast '+(type||'');
-  t.classList.add('show');
+// ── CONFIRM ──
+function doConfirm(title,msg,cb){
+  document.getElementById('confirm-title').textContent=title;
+  document.getElementById('confirm-msg').textContent=msg;
+  confirmCallback=cb;document.getElementById('confirm-overlay').classList.add('open');
+}
+function closeConfirm(e,force){
+  if(!force&&e&&e.target!==document.getElementById('confirm-overlay'))return;
+  document.getElementById('confirm-overlay').classList.remove('open');confirmCallback=null;
+}
+document.getElementById('confirm-ok-btn').onclick=()=>{if(confirmCallback)confirmCallback();closeConfirm(null,true);};
+
+// ── TOAST ──
+function showToast(msg,type){
+  const t=document.getElementById('toast');t.textContent=msg;t.className='toast '+(type||'');t.classList.add('show');
   setTimeout(()=>t.classList.remove('show'),2800);
 }
 
-// ═══════════════════════════════════════════════════
-// KEYBOARD
-// ═══════════════════════════════════════════════════
-document.addEventListener('keydown', e=>{
-  if(e.key==='Escape'){
-    closeModal(null,true);
-    closeConfirm(null,true);
-  }
+// ── RENDER ALL ──
+function renderAll(){
+  renderDashboard();renderToday();populateFilters();applyFilters();
+  if(currentPage==='team')renderTeam();
+  if(currentPage==='clients-mgmt')renderClientsMgmt();
+  if(currentPage==='client-view')renderClientView();
+  if(currentPage==='assignee-view')renderAssigneeView();
+}
+
+document.addEventListener('keydown',e=>{
+  if(e.key==='Escape'){closeTaskModal(null,true);closeAssigneeModal(null,true);closeClientModal(null,true);closeConfirm(null,true);}
 });
 
-// ═══════════════════════════════════════════════════
-// INIT
-// ═══════════════════════════════════════════════════
-loadTasks();
-renderAll();
+load();renderAll();
 </script>
 </body>
 </html>
