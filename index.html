@@ -375,11 +375,11 @@ tr:hover .row-actions{opacity:1}
           <div class="qa-title">➕ Add New Team Member</div>
           <div class="qa-grid">
             <div class="full"><input type="text" id="qa-a-name" placeholder="Full Name *"/></div>
-            <select id="qa-a-dept">
-              <option value="">Department…</option>
-              <option>Client</option><option>Finance</option><option>Sales</option><option>HR</option>
-              <option>Team</option><option>Operations</option><option>Legal</option><option>Marketing</option><option>Management</option>
-            </select>
+            <select id="qa-a-dept" onchange="handleNewDept('qa-a-dept','qa-new-dept-wrap')"><option value="">Department…</option></select>
+            <div class="add-new-row full" id="qa-new-dept-wrap">
+              <input type="text" id="qa-new-dept-input" placeholder="Type new department…"/>
+              <button onclick="confirmNewDept('qa-new-dept-input','qa-a-dept','qa-new-dept-wrap')">Add</button>
+            </div>
             <select id="qa-a-position">
               <option value="">Position…</option>
               <option>Co-founder</option><option>AVP</option><option>Manager</option>
@@ -437,7 +437,11 @@ tr:hover .row-actions{opacity:1}
         <div class="form-group"><label>Email ID</label><input type="email" id="a-email"/></div>
         <div class="form-group"><label>WhatsApp Number</label><input type="tel" id="a-whatsapp" placeholder="+91 98765 43210"/></div>
         <div class="form-group"><label>Department</label>
-          <select id="a-dept"><option value="">Select…</option><option>Client</option><option>Finance</option><option>Sales</option><option>HR</option><option>Team</option><option>Operations</option><option>Legal</option><option>Marketing</option><option>Management</option></select>
+          <select id="a-dept" onchange="handleNewDept('a-dept','new-dept-wrap')"><option value="">Select…</option></select>
+          <div class="add-new-row" id="new-dept-wrap">
+            <input type="text" id="new-dept-input" placeholder="Type new department…"/>
+            <button onclick="confirmNewDept('new-dept-input','a-dept','new-dept-wrap')">Add</button>
+          </div>
         </div>
         <div class="form-group"><label>Position</label>
           <select id="a-position" onchange="handleNewPosition()"><option value="">Select…</option><option>Co-founder</option><option>AVP</option><option>Manager</option><option>AM</option><option>TL</option><option>Executive</option><option value="__new__">➕ Add new position…</option></select>
@@ -510,7 +514,7 @@ const googleProvider = new firebase.auth.GoogleAuthProvider();
 // ═══════════════════════════════════════════════════════
 //  APP STATE
 // ═══════════════════════════════════════════════════════
-let tasks=[], assignees=[], clients=[], customPositions=[], customServices=[];
+let tasks=[], assignees=[], clients=[], customPositions=[], customServices=[], customDepts=[];
 let editingTaskId=null, editingAssigneeId=null, editingClientId=null, confirmCallback=null;
 let currentPage='dashboard', currentUser=null;
 let unsubscribers=[];
@@ -518,6 +522,7 @@ const pageSort={dashboard:{col:null,dir:1},today:{col:'days',dir:1},all:{col:'da
 const NAV_ORDER=['dashboard','today','all','client-view','assignee-view','team','clients-mgmt'];
 const BASE_POSITIONS=["Co-founder","AVP","Manager","AM","TL","Executive"];
 const BASE_SERVICES=["SEO","GMB","AI SEO","Social"];
+const BASE_DEPTS=["Client","Finance","Sales","HR","Team","Operations","Legal","Marketing","Management"];
 
 // ═══════════════════════════════════════════════════════
 //  AUTH
@@ -597,12 +602,13 @@ function setupListeners() {
     }, () => {})
   );
 
-  // Config (custom positions/services)
+  // Config (custom positions/services/depts)
   unsubscribers.push(
     db.collection('config').doc('options').onSnapshot(snap => {
       if (snap.exists) {
         customPositions = snap.data().positions || [];
         customServices  = snap.data().services  || [];
+        customDepts     = snap.data().depts      || [];
       }
     }, () => {})
   );
@@ -673,6 +679,37 @@ async function seedIfEmpty() {
 function setLoading(on){ document.getElementById('loading-bar').classList.toggle('show', on); }
 function allPositions(){ return [...BASE_POSITIONS,...customPositions]; }
 function allServices(){  return [...BASE_SERVICES,...customServices]; }
+function allDepts(){     return [...BASE_DEPTS,...customDepts]; }
+function saveConfig(){ db.collection('config').doc('options').set({positions:customPositions,services:customServices,depts:customDepts},{merge:true}); }
+
+// Build a dept <select> by id, pre-selecting `selected`
+function buildDeptSelect(elId, selected){
+  const el=document.getElementById(elId);
+  el.innerHTML=`<option value="">Department…</option>`
+    +allDepts().map(d=>`<option${d===selected?' selected':''}>${d}</option>`).join('')
+    +`<option value="__new_dept__">➕ Add new department…</option>`;
+}
+function handleNewDept(selectId, wrapId){
+  const val=document.getElementById(selectId).value;
+  const wrap=document.getElementById(wrapId);
+  if(val==='__new_dept__'){
+    document.getElementById(selectId).value='';
+    wrap.classList.add('show');
+    setTimeout(()=>wrap.querySelector('input').focus(),50);
+  } else {
+    wrap.classList.remove('show');
+  }
+}
+function confirmNewDept(inputId, selectId, wrapId){
+  const val=document.getElementById(inputId).value.trim();
+  if(!val) return;
+  if(!customDepts.includes(val)) customDepts.push(val);
+  saveConfig();
+  buildDeptSelect(selectId, val);
+  document.getElementById(wrapId).classList.remove('show');
+  document.getElementById(inputId).value='';
+  showToast('Department "'+val+'" added','success');
+}
 function getAssignee(name){ return assignees.find(a=>a.name===name); }
 function maxId(arr){ return arr.length ? Math.max(...arr.map(x=>x.id||0))+1 : 1; }
 
@@ -913,6 +950,9 @@ function onTaskAssigneeChange(){
   const val=document.getElementById('t-assignee').value;
   if(val==='__new_assignee__'){
     document.getElementById('t-assignee').value='';
+    buildDeptSelect('qa-a-dept','');
+    document.getElementById('qa-new-dept-wrap').classList.remove('show');
+    document.getElementById('qa-a-position').innerHTML=`<option value="">Position…</option>`+allPositions().map(p=>`<option>${p}</option>`).join('');
     document.getElementById('qa-assignee-panel').classList.add('show');
     setTimeout(()=>document.getElementById('qa-a-name').focus(),80);
   } else {
@@ -1049,25 +1089,33 @@ function openAssigneeModal(fid){
   editingAssigneeId=fid||null;
   document.getElementById('assignee-modal-title').textContent=fid?'Edit Team Member':'Add Team Member';
   document.getElementById('new-position-wrap').classList.remove('show');
+  document.getElementById('new-dept-wrap').classList.remove('show');
   document.getElementById('new-position-input').value='';
+  document.getElementById('new-dept-input').value='';
   if(fid){
     const a=assignees.find(x=>x._fid===fid);if(!a)return;
     document.getElementById('a-name').value=a.name||'';document.getElementById('a-email').value=a.email||'';
-    document.getElementById('a-whatsapp').value=a.whatsapp||'';document.getElementById('a-dept').value=a.dept||'';
+    document.getElementById('a-whatsapp').value=a.whatsapp||'';
+    buildDeptSelect('a-dept', a.dept||'');
     buildPositionSelect(a.position||'');
   } else {
     ['a-name','a-email','a-whatsapp'].forEach(i=>document.getElementById(i).value='');
-    document.getElementById('a-dept').value='';buildPositionSelect('');
+    buildDeptSelect('a-dept','');buildPositionSelect('');
   }
   document.getElementById('assignee-overlay').classList.add('open');
   setTimeout(()=>document.getElementById('a-name').focus(),100);
 }
-function closeAssigneeModal(e,force){ if(!force&&e&&e.target!==document.getElementById('assignee-overlay'))return; document.getElementById('assignee-overlay').classList.remove('open');editingAssigneeId=null; }
+function closeAssigneeModal(e,force){
+  if(!force&&e&&e.target!==document.getElementById('assignee-overlay'))return;
+  document.getElementById('assignee-overlay').classList.remove('open');
+  document.getElementById('new-dept-wrap').classList.remove('show');
+  editingAssigneeId=null;
+}
 function handleNewPosition(){ const v=document.getElementById('a-position').value; document.getElementById('new-position-wrap').classList.toggle('show',v==='__new__'); if(v==='__new__')setTimeout(()=>document.getElementById('new-position-input').focus(),50); }
 function confirmNewPosition(){
   const val=document.getElementById('new-position-input').value.trim();if(!val)return;
   if(!customPositions.includes(val))customPositions.push(val);
-  db.collection('config').doc('options').set({positions:customPositions,services:customServices},{merge:true});
+  saveConfig();
   buildPositionSelect(val);document.getElementById('new-position-wrap').classList.remove('show');document.getElementById('new-position-input').value='';
 }
 async function saveAssignee(){
@@ -1108,7 +1156,7 @@ function toggleNewService(){document.getElementById('new-service-wrap').classLis
 function confirmNewService(){
   const val=document.getElementById('new-service-input').value.trim();if(!val)return;
   if(!customServices.includes(val))customServices.push(val);
-  db.collection('config').doc('options').set({positions:customPositions,services:customServices},{merge:true});
+  saveConfig();
   const sel=[...document.querySelectorAll('#services-grid .svc-check.checked')].map(el=>el.querySelector('input').value);
   buildServicesGrid([...sel,val]);document.getElementById('new-service-input').value='';document.getElementById('new-service-wrap').classList.remove('show');
 }
