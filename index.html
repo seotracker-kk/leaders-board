@@ -243,6 +243,17 @@ tr:hover .row-actions{opacity:1}
 <!-- LOADING BAR -->
 <div class="loading-bar" id="loading-bar"></div>
 
+<!-- ACCESS DENIED (email not registered in team) -->
+<div id="access-denied" style="display:none;position:fixed;inset:0;background:linear-gradient(135deg,#1A1A2E,#0F3460);z-index:9990;align-items:center;justify-content:center;flex-direction:column;gap:0">
+  <div style="background:#fff;border-radius:16px;padding:40px 44px;width:420px;max-width:95vw;text-align:center;box-shadow:0 24px 64px rgba(0,0,0,.35)">
+    <div style="font-size:40px;margin-bottom:12px">🔒</div>
+    <div style="font-size:20px;font-weight:800;color:#1A1A2E;margin-bottom:8px">Access Restricted</div>
+    <div style="font-size:13px;color:#475569;margin-bottom:6px;line-height:1.6">Your Google account (<strong id="denied-email"></strong>) is not registered in this dashboard.</div>
+    <div style="font-size:13px;color:#475569;margin-bottom:24px">Contact <strong>Adarsh</strong> to get access.</div>
+    <button onclick="auth.signOut()" style="padding:10px 24px;background:#E94560;color:#fff;border:none;border-radius:8px;font-size:14px;font-weight:700;cursor:pointer">Sign Out</button>
+  </div>
+</div>
+
 <!-- ══════════════════════════════════════
   LOGIN SCREEN
 ═══════════════════════════════════════ -->
@@ -419,7 +430,7 @@ tr:hover .row-actions{opacity:1}
         <div class="form-group"><label>Priority</label><select id="t-priority"><option value="">Select…</option><option>High</option><option>Medium</option><option>Low</option></select></div>
         <div class="form-group"><label>Deadline</label><input type="date" id="t-deadline"/></div>
         <div class="form-group"><label>Status</label><select id="t-status"><option>Not Started</option><option>Pending</option><option>In Progress</option><option>Done</option><option>Overdue</option></select></div>
-        <div class="form-group"><label>Added By</label><select id="t-added-by"><option>Adarsh</option><option>Kuldeep</option></select></div>
+        <div class="form-group"><label>Added By</label><input type="text" id="t-added-by" readonly style="background:var(--gray50);color:var(--gray600)"/></div>
         <div class="form-group full"><label>Remarks</label><textarea id="t-remarks" placeholder="Notes, context, or next steps…"></textarea></div>
       </div>
     </div>
@@ -590,6 +601,7 @@ function setupListeners() {
   unsubscribers.push(
     db.collection('assignees').orderBy('id').onSnapshot(snap => {
       assignees = snap.docs.map(d => ({...d.data(), _fid: d.id}));
+      checkAccess();
       if (currentPage==='team') renderTeam();
     }, () => {})
   );
@@ -623,15 +635,16 @@ async function seedIfEmpty() {
   // Called when tasks collection doesn't exist yet — seed default data
   const DEFAULT_ASSIGNEES=[
     {id:1,name:"Adarsh",email:"contact@88gravity.com",whatsapp:"",dept:"Management",position:"Co-founder"},
-    {id:2,name:"Kuldeep",email:"kuldeep@88gravity.com",whatsapp:"",dept:"Management",position:"AVP"},
-    {id:3,name:"Priya",email:"",whatsapp:"",dept:"Client",position:"Manager"},
-    {id:4,name:"Rahul",email:"",whatsapp:"",dept:"HR",position:"Manager"},
-    {id:5,name:"SEO Team",email:"",whatsapp:"",dept:"Client",position:"TL"},
-    {id:6,name:"Content Team",email:"",whatsapp:"",dept:"Client",position:"TL"},
-    {id:7,name:"Sales Team",email:"",whatsapp:"",dept:"Sales",position:"TL"},
-    {id:8,name:"Social Team",email:"",whatsapp:"",dept:"Team",position:"TL"},
-    {id:9,name:"Dev Team",email:"",whatsapp:"",dept:"Team",position:"TL"},
-    {id:10,name:"HR Team",email:"",whatsapp:"",dept:"HR",position:"TL"},
+    {id:2,name:"Depreet",email:"depreet@88gravity.com",whatsapp:"",dept:"Management",position:"Co-founder"},
+    {id:3,name:"Kuldeep",email:"kuldeep@88gravity.com",whatsapp:"",dept:"Management",position:"AVP"},
+    {id:4,name:"Priya",email:"",whatsapp:"",dept:"Client",position:"Manager"},
+    {id:5,name:"Rahul",email:"",whatsapp:"",dept:"HR",position:"Manager"},
+    {id:6,name:"SEO Team",email:"",whatsapp:"",dept:"Client",position:"TL"},
+    {id:7,name:"Content Team",email:"",whatsapp:"",dept:"Client",position:"TL"},
+    {id:8,name:"Sales Team",email:"",whatsapp:"",dept:"Sales",position:"TL"},
+    {id:9,name:"Social Team",email:"",whatsapp:"",dept:"Team",position:"TL"},
+    {id:10,name:"Dev Team",email:"",whatsapp:"",dept:"Team",position:"TL"},
+    {id:11,name:"HR Team",email:"",whatsapp:"",dept:"HR",position:"TL"},
   ];
   const DEFAULT_CLIENTS=[
     {id:1,name:"Enout",services:["SEO"],website:""},{id:2,name:"Tiaraa Kerala",services:["Social"],website:""},
@@ -677,6 +690,35 @@ async function seedIfEmpty() {
 //  HELPERS
 // ═══════════════════════════════════════════════════════
 function setLoading(on){ document.getElementById('loading-bar').classList.toggle('show', on); }
+
+// ── ROLE-BASED ACCESS ──────────────────────────────────
+// Match logged-in Google email → team member record
+function getMyMember(){
+  if(!currentUser||!assignees.length) return null;
+  return assignees.find(a=>a.email&&a.email.toLowerCase()===currentUser.email.toLowerCase())||null;
+}
+
+// Tasks visible to the current user:
+//   • tasks I created (addedBy === my name)
+//   • tasks assigned to me (assignee === my name)
+function visibleTasks(){
+  const me=getMyMember();
+  if(!me) return [];
+  return tasks.filter(t=>t.assignee===me.name||t.addedBy===me.name);
+}
+
+// Show access-denied screen if email not in team
+function checkAccess(){
+  if(!currentUser) return;
+  const me=getMyMember();
+  const denied=document.getElementById('access-denied');
+  if(!me && assignees.length>0){
+    document.getElementById('denied-email').textContent=currentUser.email;
+    denied.style.display='flex';
+  } else {
+    denied.style.display='none';
+  }
+}
 function allPositions(){ return [...BASE_POSITIONS,...customPositions]; }
 function allServices(){  return [...BASE_SERVICES,...customServices]; }
 function allDepts(){     return [...BASE_DEPTS,...customDepts]; }
@@ -812,9 +854,10 @@ function showPage(id){
 //  RENDER
 // ═══════════════════════════════════════════════════════
 function renderDashboard(){
+  const vt=visibleTasks();
   const tod=new Date().setHours(0,0,0,0);
-  const c={total:tasks.length,overdue:0,dueToday:0,inProg:0,pending:0,notStart:0,done:0};
-  tasks.forEach(t=>{
+  const c={total:vt.length,overdue:0,dueToday:0,inProg:0,pending:0,notStart:0,done:0};
+  vt.forEach(t=>{
     if(t.status==='Overdue')c.overdue++;if(t.status==='Done')c.done++;
     if(t.status==='In Progress')c.inProg++;if(t.status==='Pending')c.pending++;
     if(t.status==='Not Started')c.notStart++;
@@ -828,53 +871,57 @@ function renderDashboard(){
     <div class="kpi-card kpi-pending"><div class="kpi-label">Pending</div><div class="kpi-value">${c.pending}</div><div class="kpi-sub">awaiting</div></div>
     <div class="kpi-card kpi-ns"><div class="kpi-label">Not Started</div><div class="kpi-value">${c.notStart}</div><div class="kpi-sub">queued</div></div>
     <div class="kpi-card kpi-done"><div class="kpi-label">Done ✓</div><div class="kpi-value">${c.done}</div><div class="kpi-sub">completed</div></div>`;
-  buildTable(sorted(tasks,'dashboard'),document.getElementById('dash-table-wrap'),false,'dashboard');
+  buildTable(sorted(vt,'dashboard'),document.getElementById('dash-table-wrap'),false,'dashboard');
 }
 function renderToday(){
   document.getElementById('today-date-str').textContent=new Date().toLocaleDateString('en-IN',{weekday:'long',day:'numeric',month:'long',year:'numeric'});
-  const urgent=tasks.filter(t=>{if(t.status==='Done')return false;const d=daysLeft(t.deadline);return t.status==='Overdue'||(d!==null&&d<=0);});
+  const urgent=visibleTasks().filter(t=>{if(t.status==='Done')return false;const d=daysLeft(t.deadline);return t.status==='Overdue'||(d!==null&&d<=0);});
   document.getElementById('focus-count').textContent=urgent.length;
   document.getElementById('focus-badge').textContent=urgent.length;
   buildTable(sorted(urgent,'today'),document.getElementById('today-table-wrap'),false,'today');
 }
 function populateFilters(){
+  const vt=visibleTasks();
   const fill=(id,arr,first)=>{const s=document.getElementById(id),cur=s.value;s.innerHTML=`<option value="">${first}</option>`;arr.forEach(v=>s.innerHTML+=`<option${v===cur?' selected':''}>${v}</option>`);};
   fill('f-status',['Overdue','Pending','In Progress','Done','Not Started'],'All Statuses');
   fill('f-priority',['High','Medium','Low'],'All Priorities');
-  fill('f-dept',[...new Set(tasks.map(t=>t.dept).filter(Boolean))].sort(),'All Departments');
-  fill('f-assignee',[...new Set(tasks.map(t=>t.assignee).filter(Boolean))].sort(),'All Assignees');
-  fill('f-client',[...new Set(tasks.map(t=>t.client).filter(Boolean))].sort(),'All Clients');
+  fill('f-dept',[...new Set(vt.map(t=>t.dept).filter(Boolean))].sort(),'All Departments');
+  fill('f-assignee',[...new Set(vt.map(t=>t.assignee).filter(Boolean))].sort(),'All Assignees');
+  fill('f-client',[...new Set(vt.map(t=>t.client).filter(Boolean))].sort(),'All Clients');
 }
 function applyFilters(){
+  const vt=visibleTasks();
   const q=document.getElementById('search-input').value.toLowerCase();
   const fs=document.getElementById('f-status').value,fp=document.getElementById('f-priority').value;
   const fd=document.getElementById('f-dept').value,fa=document.getElementById('f-assignee').value,fc=document.getElementById('f-client').value;
-  const filtered=tasks.filter(t=>{
+  const filtered=vt.filter(t=>{
     if(q&&!`${t.task} ${t.client} ${t.assignee} ${t.remarks}`.toLowerCase().includes(q))return false;
     if(fs&&t.status!==fs)return false;if(fp&&t.priority!==fp)return false;
     if(fd&&t.dept!==fd)return false;if(fa&&t.assignee!==fa)return false;if(fc&&t.client!==fc)return false;
     return true;
   });
-  document.getElementById('all-count').textContent=`Showing ${filtered.length} of ${tasks.length}`;
+  document.getElementById('all-count').textContent=`Showing ${filtered.length} of ${vt.length}`;
   document.getElementById('all-sub').textContent=`${filtered.length} task${filtered.length!==1?'s':''} shown`;
   buildTable(sorted(filtered,'all'),document.getElementById('all-table-wrap'),false,'all');
 }
 function clearFilters(){ ['f-status','f-priority','f-dept','f-assignee','f-client'].forEach(id=>document.getElementById(id).value='');document.getElementById('search-input').value='';applyFilters(); }
 
 function renderClientView(){
+  const vt=visibleTasks();
   const sel=document.getElementById('sel-client');
-  const names=[...new Set(tasks.map(t=>t.client).filter(Boolean))].sort();
+  const names=[...new Set(vt.map(t=>t.client).filter(Boolean))].sort();
   const cur=sel.value||names[0]||'';
   sel.innerHTML=names.map(n=>`<option${n===cur?' selected':''}>${n}</option>`).join('');
-  const f=tasks.filter(t=>t.client===cur);
+  const f=vt.filter(t=>t.client===cur);
   renderMiniKpis('client-kpis',f);buildTable(sorted(f,'client-view'),document.getElementById('client-table-wrap'),true,'client-view');
 }
 function renderAssigneeView(){
+  const vt=visibleTasks();
   const sel=document.getElementById('sel-assignee');
-  const names=[...new Set(tasks.map(t=>t.assignee).filter(Boolean))].sort();
+  const names=[...new Set(vt.map(t=>t.assignee).filter(Boolean))].sort();
   const cur=sel.value||names[0]||'';
   sel.innerHTML=names.map(n=>`<option${n===cur?' selected':''}>${n}</option>`).join('');
-  const f=tasks.filter(t=>t.assignee===cur);
+  const f=vt.filter(t=>t.assignee===cur);
   renderMiniKpis('assignee-kpis',f);buildTable(sorted(f,'assignee-view'),document.getElementById('assignee-table-wrap'),true,'assignee-view');
 }
 function renderMiniKpis(id,rows){
@@ -891,8 +938,9 @@ function renderMiniKpis(id,rows){
 function renderTeam(){
   document.getElementById('team-sub').textContent=`${assignees.length} member${assignees.length!==1?'s':''}`;
   if(!assignees.length){document.getElementById('team-grid').innerHTML=`<div class="empty-state"><div class="icon">👥</div><strong>No team members yet</strong></div>`;return;}
+  const vt=visibleTasks();
   document.getElementById('team-grid').innerHTML=assignees.map(a=>{
-    const tc=tasks.filter(t=>t.assignee===a.name).length;
+    const tc=vt.filter(t=>t.assignee===a.name).length;
     return `<div class="mgmt-card">
       <div class="mgmt-card-name">👤 ${escHtml(a.name)}</div>
       <span class="pos-badge">${escHtml(a.position||'—')}</span><span class="dept-badge">${escHtml(a.dept||'—')}</span>
@@ -910,8 +958,9 @@ function renderTeam(){
 function renderClientsMgmt(){
   document.getElementById('clients-sub').textContent=`${clients.length} client${clients.length!==1?'s':''}`;
   if(!clients.length){document.getElementById('clients-grid').innerHTML=`<div class="empty-state"><div class="icon">🤝</div><strong>No clients yet</strong></div>`;return;}
+  const vtc=visibleTasks();
   document.getElementById('clients-grid').innerHTML=clients.map(c=>{
-    const tc=tasks.filter(t=>t.client===c.name).length;
+    const tc=vtc.filter(t=>t.client===c.name).length;
     const svcs=(c.services||[]).map(s=>`<span class="svc-badge">${escHtml(s)}</span>`).join('');
     return `<div class="mgmt-card client-card">
       <div class="mgmt-card-name">🏢 ${escHtml(c.name)}</div>
@@ -1042,7 +1091,7 @@ function openTaskModal(fid){
     ['t-task','t-dept','t-deadline','t-remarks'].forEach(i=>document.getElementById(i).value='');
     ['t-assignee','t-client','t-priority'].forEach(i=>document.getElementById(i).value='');
     document.getElementById('t-status').value='Not Started';
-    document.getElementById('t-added-by').value=currentUser?.displayName?.split(' ')[0]||'Adarsh';
+    document.getElementById('t-added-by').value=getMyMember()?.name||currentUser?.displayName?.split(' ')[0]||'';
   }
   document.getElementById('task-overlay').classList.add('open');
   setTimeout(()=>document.getElementById('t-task').focus(),100);
@@ -1061,7 +1110,10 @@ async function saveTask(){
   const obj={task,assignee:document.getElementById('t-assignee').value,dept:document.getElementById('t-dept').value,
     client:document.getElementById('t-client').value,priority:document.getElementById('t-priority').value,
     deadline:document.getElementById('t-deadline').value,status:document.getElementById('t-status').value,
-    addedBy:document.getElementById('t-added-by').value,remarks:document.getElementById('t-remarks').value.trim(),
+    addedBy: editingTaskId
+      ? (tasks.find(t=>t._fid===editingTaskId)?.addedBy||getMyMember()?.name||'')  // preserve original addedBy on edit
+      : (getMyMember()?.name||currentUser?.displayName?.split(' ')[0]||''),
+    remarks:document.getElementById('t-remarks').value.trim(),
     updatedAt:firebase.firestore.FieldValue.serverTimestamp(),updatedBy:currentUser?.email||''};
   setLoading(true);
   try {
