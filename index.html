@@ -181,6 +181,21 @@ tr:hover .row-actions{opacity:1}
 .confirm-box p{font-size:13px;color:var(--gray600);margin-bottom:20px}
 .auto-note{font-size:11px;color:var(--gray400);font-weight:400;text-transform:none;letter-spacing:0;margin-left:4px}
 
+/* ── QUICK-ADD INLINE PANEL (inside task modal) ── */
+.quick-add-panel{display:none;grid-column:1/-1;background:#F0F7FF;border:1.5px solid var(--blue);border-radius:10px;padding:14px 16px;margin-top:2px}
+.quick-add-panel.show{display:block}
+.quick-add-panel .qa-title{font-size:12px;font-weight:700;color:var(--blue);text-transform:uppercase;letter-spacing:.4px;margin-bottom:10px}
+.quick-add-panel .qa-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.quick-add-panel .qa-grid input,.quick-add-panel .qa-grid select{padding:7px 10px;border:1.5px solid var(--gray200);border-radius:7px;font-size:13px;outline:none;font-family:inherit;background:#fff}
+.quick-add-panel .qa-grid input:focus,.quick-add-panel .qa-grid select:focus{border-color:var(--blue)}
+.quick-add-panel .qa-grid .full{grid-column:1/-1}
+.quick-add-panel .qa-actions{display:flex;gap:8px;margin-top:10px;justify-content:flex-end}
+.quick-add-panel .qa-svc{display:flex;flex-wrap:wrap;gap:6px;margin-top:4px}
+.quick-add-panel .qa-svc label{display:flex;align-items:center;gap:5px;padding:5px 10px;border:1.5px solid var(--gray200);border-radius:7px;cursor:pointer;font-size:12px;background:#fff;transition:all .15s}
+.quick-add-panel .qa-svc label:hover{border-color:var(--blue)}
+.quick-add-panel .qa-svc label.checked{background:#EBF5FB;border-color:var(--blue);color:var(--blue);font-weight:700}
+.quick-add-panel .qa-svc input[type=checkbox]{display:none}
+
 /* ── LOADING INDICATOR ── */
 .loading-bar{position:fixed;top:0;left:0;right:0;height:3px;background:linear-gradient(90deg,var(--accent),var(--blue));z-index:9998;display:none;animation:loadSlide 1.5s infinite}
 @keyframes loadSlide{0%{transform:translateX(-100%)}100%{transform:translateX(100%)}}
@@ -340,9 +355,62 @@ tr:hover .row-actions{opacity:1}
     <div class="modal-body">
       <div class="form-grid">
         <div class="form-group full"><label>Task / Activity *</label><input type="text" id="t-task" placeholder="Describe the task…"/></div>
-        <div class="form-group"><label>Assignee</label><select id="t-assignee" onchange="onAssigneeChange()"><option value="">Select…</option></select></div>
-        <div class="form-group"><label>Department <span class="auto-note">(auto from assignee)</span></label><input type="text" id="t-dept" readonly placeholder="Auto-filled"/></div>
-        <div class="form-group"><label>Client / Project</label><select id="t-client"><option value="">Select…</option></select></div>
+
+        <div class="form-group">
+          <label>Assignee</label>
+          <select id="t-assignee" onchange="onTaskAssigneeChange()"><option value="">Select…</option></select>
+        </div>
+        <div class="form-group">
+          <label>Department <span class="auto-note">(auto from assignee)</span></label>
+          <input type="text" id="t-dept" readonly placeholder="Auto-filled"/>
+        </div>
+
+        <!-- Quick-add assignee panel -->
+        <div class="quick-add-panel" id="qa-assignee-panel">
+          <div class="qa-title">➕ Add New Team Member</div>
+          <div class="qa-grid">
+            <div class="full"><input type="text" id="qa-a-name" placeholder="Full Name *"/></div>
+            <select id="qa-a-dept">
+              <option value="">Department…</option>
+              <option>Client</option><option>Finance</option><option>Sales</option><option>HR</option>
+              <option>Team</option><option>Operations</option><option>Legal</option><option>Marketing</option><option>Management</option>
+            </select>
+            <select id="qa-a-position">
+              <option value="">Position…</option>
+              <option>Co-founder</option><option>AVP</option><option>Manager</option>
+              <option>AM</option><option>TL</option><option>Executive</option>
+            </select>
+            <input type="email" id="qa-a-email" placeholder="Email (optional)"/>
+            <input type="tel"   id="qa-a-whatsapp" placeholder="WhatsApp (optional)"/>
+          </div>
+          <div class="qa-actions">
+            <button class="btn btn-secondary btn-sm" onclick="closeQAPanel('qa-assignee-panel','t-assignee')">Cancel</button>
+            <button class="btn btn-blue btn-sm" onclick="quickSaveAssignee()">Save & Select</button>
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label>Client / Project</label>
+          <select id="t-client" onchange="onTaskClientChange()"><option value="">Select…</option></select>
+        </div>
+        <div class="form-group"><!-- spacer --></div>
+
+        <!-- Quick-add client panel -->
+        <div class="quick-add-panel" id="qa-client-panel">
+          <div class="qa-title">➕ Add New Client / Project</div>
+          <div class="qa-grid">
+            <div class="full"><input type="text" id="qa-c-name" placeholder="Client Name *"/></div>
+            <div class="full">
+              <div style="font-size:11px;font-weight:700;color:var(--gray600);text-transform:uppercase;letter-spacing:.3px;margin-bottom:6px">Services</div>
+              <div class="qa-svc" id="qa-svc-grid"></div>
+            </div>
+            <div class="full"><input type="url" id="qa-c-website" placeholder="Website URL (optional)"/></div>
+          </div>
+          <div class="qa-actions">
+            <button class="btn btn-secondary btn-sm" onclick="closeQAPanel('qa-client-panel','t-client')">Cancel</button>
+            <button class="btn btn-green btn-sm" onclick="quickSaveClient()">Save & Select</button>
+          </div>
+        </div>
         <div class="form-group"><label>Priority</label><select id="t-priority"><option value="">Select…</option><option>High</option><option>Medium</option><option>Low</option></select></div>
         <div class="form-group"><label>Deadline</label><input type="date" id="t-deadline"/></div>
         <div class="form-group"><label>Status</label><select id="t-status"><option>Not Started</option><option>Pending</option><option>In Progress</option><option>Done</option><option>Overdue</option></select></div>
@@ -819,13 +887,93 @@ function renderClientsMgmt(){
 // ═══════════════════════════════════════════════════════
 //  TASK CRUD
 // ═══════════════════════════════════════════════════════
-function populateTaskDropdowns(){
-  const asel=document.getElementById('t-assignee'),cur=asel.value;
-  asel.innerHTML=`<option value="">Select…</option>`+assignees.map(a=>`<option${a.name===cur?' selected':''}>${escHtml(a.name)}</option>`).join('');
-  const csel=document.getElementById('t-client'),cur2=csel.value;
-  csel.innerHTML=`<option value="">Select…</option>`+clients.map(c=>`<option${c.name===cur2?' selected':''}>${escHtml(c.name)}</option>`).join('');
+function populateTaskDropdowns(keepAssignee, keepClient){
+  const asel=document.getElementById('t-assignee');
+  const curA=keepAssignee||asel.value;
+  asel.innerHTML=`<option value="">Select assignee…</option>`
+    +assignees.map(a=>`<option${a.name===curA?' selected':''}>${escHtml(a.name)}</option>`).join('')
+    +`<option value="__new_assignee__">➕ Add new member…</option>`;
+
+  const csel=document.getElementById('t-client');
+  const curC=keepClient||csel.value;
+  csel.innerHTML=`<option value="">Select client…</option>`
+    +clients.map(c=>`<option${c.name===curC?' selected':''}>${escHtml(c.name)}</option>`).join('')
+    +`<option value="__new_client__">➕ Add new client…</option>`;
 }
+
 function onAssigneeChange(){ const a=getAssignee(document.getElementById('t-assignee').value); document.getElementById('t-dept').value=a?a.dept:''; }
+
+function onTaskAssigneeChange(){
+  const val=document.getElementById('t-assignee').value;
+  if(val==='__new_assignee__'){
+    document.getElementById('t-assignee').value='';
+    document.getElementById('qa-assignee-panel').classList.add('show');
+    setTimeout(()=>document.getElementById('qa-a-name').focus(),80);
+  } else {
+    document.getElementById('qa-assignee-panel').classList.remove('show');
+    onAssigneeChange();
+  }
+}
+
+function onTaskClientChange(){
+  const val=document.getElementById('t-client').value;
+  if(val==='__new_client__'){
+    document.getElementById('t-client').value='';
+    // build services checkboxes
+    document.getElementById('qa-svc-grid').innerHTML=allServices().map(s=>
+      `<label onclick="this.classList.toggle('checked');this.querySelector('input').checked=this.classList.contains('checked')">
+        <input type="checkbox" value="${escHtml(s)}">${escHtml(s)}</label>`
+    ).join('');
+    document.getElementById('qa-client-panel').classList.add('show');
+    setTimeout(()=>document.getElementById('qa-c-name').focus(),80);
+  } else {
+    document.getElementById('qa-client-panel').classList.remove('show');
+  }
+}
+
+function closeQAPanel(panelId, selectId){
+  document.getElementById(panelId).classList.remove('show');
+  document.getElementById(selectId).value='';
+}
+
+async function quickSaveAssignee(){
+  const name=document.getElementById('qa-a-name').value.trim();
+  if(!name){showToast('Name is required','error');return;}
+  const obj={name,dept:document.getElementById('qa-a-dept').value,position:document.getElementById('qa-a-position').value,email:document.getElementById('qa-a-email').value.trim(),whatsapp:document.getElementById('qa-a-whatsapp').value.trim()};
+  setLoading(true);
+  try {
+    await db.collection('assignees').add({...obj,id:maxId(assignees)});
+    // Wait briefly for listener to fire, then select the new name
+    setTimeout(()=>{
+      populateTaskDropdowns(name, null);
+      document.getElementById('t-dept').value=obj.dept||'';
+      document.getElementById('qa-assignee-panel').classList.remove('show');
+      // clear fields
+      ['qa-a-name','qa-a-email','qa-a-whatsapp'].forEach(i=>document.getElementById(i).value='');
+      document.getElementById('qa-a-dept').value='';document.getElementById('qa-a-position').value='';
+      showToast(name+' added & selected ✓','success');
+    },600);
+  } catch(e){ showToast('Error: '+e.message,'error'); }
+  setLoading(false);
+}
+
+async function quickSaveClient(){
+  const name=document.getElementById('qa-c-name').value.trim();
+  if(!name){showToast('Client name is required','error');return;}
+  const services=[...document.querySelectorAll('#qa-svc-grid .checked input')].map(el=>el.value);
+  const obj={name,services,website:document.getElementById('qa-c-website').value.trim()};
+  setLoading(true);
+  try {
+    await db.collection('clients').add({...obj,id:maxId(clients)});
+    setTimeout(()=>{
+      populateTaskDropdowns(null, name);
+      document.getElementById('qa-client-panel').classList.remove('show');
+      document.getElementById('qa-c-name').value='';document.getElementById('qa-c-website').value='';
+      showToast(name+' added & selected ✓','success');
+    },600);
+  } catch(e){ showToast('Error: '+e.message,'error'); }
+  setLoading(false);
+}
 
 function openTaskModal(fid){
   editingTaskId=fid||null;
@@ -852,7 +1000,13 @@ function openTaskModal(fid){
   document.getElementById('task-overlay').classList.add('open');
   setTimeout(()=>document.getElementById('t-task').focus(),100);
 }
-function closeTaskModal(e,force){ if(!force&&e&&e.target!==document.getElementById('task-overlay'))return; document.getElementById('task-overlay').classList.remove('open');editingTaskId=null; }
+function closeTaskModal(e,force){
+  if(!force&&e&&e.target!==document.getElementById('task-overlay'))return;
+  document.getElementById('task-overlay').classList.remove('open');
+  document.getElementById('qa-assignee-panel').classList.remove('show');
+  document.getElementById('qa-client-panel').classList.remove('show');
+  editingTaskId=null;
+}
 
 async function saveTask(){
   const task=document.getElementById('t-task').value.trim();
