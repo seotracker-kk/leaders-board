@@ -172,10 +172,13 @@ tr:hover .row-actions{opacity:1}
 .add-new-row input{flex:1;padding:7px 10px;border:1.5px solid var(--blue);border-radius:7px;font-size:13px;outline:none;font-family:inherit}
 .add-new-row button{padding:7px 12px;background:var(--blue);color:#fff;border:none;border-radius:7px;cursor:pointer;font-size:12px;font-weight:600}
 .services-grid{display:flex;flex-wrap:wrap;gap:8px;margin-top:4px}
-.svc-check{display:flex;align-items:center;gap:6px;padding:6px 14px;border:1.5px solid var(--gray200);border-radius:8px;cursor:pointer;font-size:13px;user-select:none;transition:all .15s}
-.svc-check:hover{border-color:var(--blue);background:#EBF5FB}
-.svc-check input{display:none}
-.svc-check.checked{background:#EBF5FB;border-color:var(--blue);color:var(--blue);font-weight:700}
+.svc-check{display:flex;align-items:center;gap:8px;padding:7px 14px;border:1.5px solid var(--gray200);border-radius:8px;cursor:pointer;font-size:13px;user-select:none;transition:all .15s;background:#fff}
+.svc-check:hover{border-color:var(--blue);background:#F0F7FF}
+.svc-check input[type=checkbox]{display:none}
+.svc-check .cb-box{width:16px;height:16px;border:2px solid var(--gray400);border-radius:4px;display:flex;align-items:center;justify-content:center;flex-shrink:0;transition:all .15s;font-size:10px;color:transparent}
+.svc-check.checked{border-color:var(--blue);background:#EBF5FB;color:var(--blue);font-weight:700}
+.svc-check.checked .cb-box{background:var(--blue);border-color:var(--blue);color:#fff}
+.svc-hint{font-size:11px;color:var(--gray400);margin-top:6px;font-style:italic}
 .confirm-box{background:#fff;border-radius:14px;width:400px;max-width:95vw;padding:28px;box-shadow:var(--shadow-lg);text-align:center}
 .confirm-box h3{font-size:18px;font-weight:800;color:var(--navy);margin-bottom:8px}
 .confirm-box p{font-size:13px;color:var(--gray600);margin-bottom:20px}
@@ -191,9 +194,11 @@ tr:hover .row-actions{opacity:1}
 .quick-add-panel .qa-grid .full{grid-column:1/-1}
 .quick-add-panel .qa-actions{display:flex;gap:8px;margin-top:10px;justify-content:flex-end}
 .quick-add-panel .qa-svc{display:flex;flex-wrap:wrap;gap:6px;margin-top:4px}
-.quick-add-panel .qa-svc label{display:flex;align-items:center;gap:5px;padding:5px 10px;border:1.5px solid var(--gray200);border-radius:7px;cursor:pointer;font-size:12px;background:#fff;transition:all .15s}
-.quick-add-panel .qa-svc label:hover{border-color:var(--blue)}
-.quick-add-panel .qa-svc label.checked{background:#EBF5FB;border-color:var(--blue);color:var(--blue);font-weight:700}
+.quick-add-panel .qa-svc label{display:flex;align-items:center;gap:7px;padding:6px 12px;border:1.5px solid var(--gray200);border-radius:7px;cursor:pointer;font-size:12px;background:#fff;transition:all .15s;user-select:none}
+.quick-add-panel .qa-svc label:hover{border-color:var(--blue);background:#F0F7FF}
+.quick-add-panel .qa-svc label .cb-box{width:14px;height:14px;border:2px solid var(--gray400);border-radius:3px;display:flex;align-items:center;justify-content:center;flex-shrink:0;font-size:9px;color:transparent;transition:all .15s}
+.quick-add-panel .qa-svc label.checked{border-color:var(--blue);background:#EBF5FB;color:var(--blue);font-weight:700}
+.quick-add-panel .qa-svc label.checked .cb-box{background:var(--blue);border-color:var(--blue);color:#fff}
 .quick-add-panel .qa-svc input[type=checkbox]{display:none}
 
 /* ── LOADING INDICATOR ── */
@@ -452,8 +457,9 @@ tr:hover .row-actions{opacity:1}
       <div class="form-grid">
         <div class="form-group full"><label>Client Name *</label><input type="text" id="c-name"/></div>
         <div class="form-group full">
-          <label>Services Provided</label>
+          <label>Services Provided <span class="auto-note">— select one or multiple</span></label>
           <div class="services-grid" id="services-grid"></div>
+          <div id="services-hint" class="svc-hint" style="display:none">✓ You can select multiple services</div>
           <div style="margin-top:10px">
             <button class="btn btn-secondary btn-sm" onclick="toggleNewService()">➕ Add new service</button>
             <div class="add-new-row" id="new-service-wrap" style="margin-top:8px"><input type="text" id="new-service-input" placeholder="Type new service…"/><button onclick="confirmNewService()">Add</button></div>
@@ -922,7 +928,8 @@ function onTaskClientChange(){
     // build services checkboxes
     document.getElementById('qa-svc-grid').innerHTML=allServices().map(s=>
       `<label onclick="this.classList.toggle('checked');this.querySelector('input').checked=this.classList.contains('checked')">
-        <input type="checkbox" value="${escHtml(s)}">${escHtml(s)}</label>`
+        <input type="checkbox" value="${escHtml(s)}">
+        <span class="cb-box">✓</span>${escHtml(s)}</label>`
     ).join('');
     document.getElementById('qa-client-panel').classList.add('show');
     setTimeout(()=>document.getElementById('qa-c-name').focus(),80);
@@ -1088,8 +1095,13 @@ async function deleteMember(fid){
 function buildServicesGrid(selected){
   document.getElementById('services-grid').innerHTML=allServices().map(s=>{
     const on=selected.includes(s);
-    return `<label class="svc-check${on?' checked':''}" onclick="toggleSvc(this)"><input type="checkbox" value="${escHtml(s)}"${on?' checked':''}>${escHtml(s)}</label>`;
+    return `<label class="svc-check${on?' checked':''}" onclick="toggleSvc(this)">
+      <input type="checkbox" value="${escHtml(s)}"${on?' checked':''}>
+      <span class="cb-box">✓</span>${escHtml(s)}</label>`;
   }).join('');
+  // hint
+  const hint=document.getElementById('services-hint');
+  if(hint) hint.style.display='block';
 }
 function toggleSvc(el){el.classList.toggle('checked');el.querySelector('input').checked=el.classList.contains('checked');}
 function toggleNewService(){document.getElementById('new-service-wrap').classList.toggle('show');if(document.getElementById('new-service-wrap').classList.contains('show'))setTimeout(()=>document.getElementById('new-service-input').focus(),50);}
