@@ -288,6 +288,8 @@ tr:hover .row-actions{opacity:1}
       <div class="nav-item" onclick="showPage('all')"><span class="icon">📋</span>All Tasks</div>
       <div class="nav-item" onclick="showPage('client-view')"><span class="icon">🏢</span>By Client</div>
       <div class="nav-item" onclick="showPage('assignee-view')"><span class="icon">👤</span>By Assignee</div>
+      <div class="nav-item" onclick="showPage('open')"><span class="icon">📂</span>Open Tasks<span class="badge" id="open-badge">0</span></div>
+      <div class="nav-item" onclick="showPage('completed')"><span class="icon">✅</span>Completed<span class="badge" id="completed-badge" style="background:var(--green)">0</span></div>
       <div class="nav-section" style="margin-top:8px">Manage</div>
       <div class="nav-item" onclick="showPage('team')"><span class="icon">👥</span>Team</div>
       <div class="nav-item" onclick="showPage('clients-mgmt')"><span class="icon">🤝</span>Clients</div>
@@ -306,7 +308,7 @@ tr:hover .row-actions{opacity:1}
     <header class="topbar">
       <div class="hamburger" id="hamburger" onclick="toggleSidebar()"><span></span><span></span><span></span></div>
       <div class="topbar-title" id="page-title">Dashboard</div>
-      <div class="search-box"><span>🔍</span><input type="text" id="search-input" placeholder="Search tasks…" oninput="applyFilters()"/></div>
+      <div class="search-box"><span>🔍</span><input type="text" id="search-input" placeholder="Search tasks…" oninput="globalSearch()"/></div>
       <button class="btn btn-primary" onclick="openTaskModal()">＋ Add Task</button>
     </header>
 
@@ -349,6 +351,24 @@ tr:hover .row-actions{opacity:1}
       <div class="page" id="page-assignee-view">
         <div class="selector-row"><label>Assignee</label><select id="sel-assignee" onchange="renderAssigneeView()"></select><div class="mini-kpis" id="assignee-kpis"></div></div>
         <div class="table-wrap" id="assignee-table-wrap"></div>
+      </div>
+
+      <div class="page" id="page-open">
+        <div class="section-header"><div><div class="section-title">Open Tasks</div><div class="section-sub" id="open-sub"></div></div></div>
+        <div class="filter-bar">
+          <span class="filter-label">Filter:</span>
+          <select id="of-status" onchange="renderOpen()"><option value="">All Statuses</option><option>Overdue</option><option>Pending</option><option>In Progress</option><option>Not Started</option></select>
+          <select id="of-priority" onchange="renderOpen()"><option value="">All Priorities</option><option>High</option><option>Medium</option><option>Low</option></select>
+          <select id="of-assignee" onchange="renderOpen()"><option value="">All Assignees</option></select>
+          <button class="btn btn-secondary btn-sm" onclick="clearOpenFilters()">Clear</button>
+          <span class="active-count" id="open-count"></span>
+        </div>
+        <div class="table-wrap" id="open-table-wrap"></div>
+      </div>
+
+      <div class="page" id="page-completed">
+        <div class="section-header"><div><div class="section-title">Completed Tasks</div><div class="section-sub" id="completed-sub"></div></div></div>
+        <div class="table-wrap" id="completed-table-wrap"></div>
       </div>
 
       <div class="page" id="page-team">
@@ -529,8 +549,8 @@ let tasks=[], assignees=[], clients=[], customPositions=[], customServices=[], c
 let editingTaskId=null, editingAssigneeId=null, editingClientId=null, confirmCallback=null;
 let currentPage='dashboard', currentUser=null;
 let unsubscribers=[];
-const pageSort={dashboard:{col:null,dir:1},today:{col:'days',dir:1},all:{col:'days',dir:1},'client-view':{col:'days',dir:1},'assignee-view':{col:'days',dir:1}};
-const NAV_ORDER=['dashboard','today','all','client-view','assignee-view','team','clients-mgmt'];
+const pageSort={dashboard:{col:null,dir:1},today:{col:'days',dir:1},all:{col:'days',dir:1},'client-view':{col:'days',dir:1},'assignee-view':{col:'days',dir:1},open:{col:'days',dir:1},completed:{col:'deadline',dir:-1}};
+const NAV_ORDER=['dashboard','today','all','client-view','assignee-view','open','completed','team','clients-mgmt'];
 const BASE_POSITIONS=["Co-founder","AVP","Manager","AM","TL","Executive"];
 const BASE_SERVICES=["SEO","GMB","AI SEO","Social"];
 const BASE_DEPTS=["Client","Finance","Sales","HR","Team","Operations","Legal","Marketing","Management"];
@@ -602,7 +622,7 @@ function setupListeners() {
     db.collection('assignees').orderBy('id').onSnapshot(snap => {
       assignees = snap.docs.map(d => ({...d.data(), _fid: d.id}));
       checkAccess();
-      if (currentPage==='team') renderTeam();
+      renderAll(); // re-render so dashboard populates correctly once members load
     }, () => {})
   );
 
@@ -833,7 +853,7 @@ function sorted(arr,page){
 // ═══════════════════════════════════════════════════════
 function toggleSidebar(){ const sb=document.getElementById('sidebar'),hb=document.getElementById('hamburger'),bd=document.getElementById('sidebar-backdrop'); const o=sb.classList.toggle('mobile-open');hb.classList.toggle('open',o);bd.classList.toggle('show',o); }
 function closeSidebar(){ document.getElementById('sidebar').classList.remove('mobile-open');document.getElementById('hamburger').classList.remove('open');document.getElementById('sidebar-backdrop').classList.remove('show'); }
-const PAGE_TITLES={dashboard:'Dashboard',today:"Today's Focus",all:'All Tasks','client-view':'By Client','assignee-view':'By Assignee',team:'Team','clients-mgmt':'Clients'};
+const PAGE_TITLES={dashboard:'Dashboard',today:"Today's Focus",all:'All Tasks','client-view':'By Client','assignee-view':'By Assignee',open:'Open Tasks',completed:'Completed Tasks',team:'Team','clients-mgmt':'Clients'};
 
 function showPage(id){
   currentPage=id; closeSidebar();
@@ -845,6 +865,8 @@ function showPage(id){
   else if(id==='all'){populateFilters();applyFilters();}
   else if(id==='client-view') renderClientView();
   else if(id==='assignee-view') renderAssigneeView();
+  else if(id==='open') renderOpen();
+  else if(id==='completed') renderCompleted();
   else if(id==='team') renderTeam();
   else if(id==='clients-mgmt') renderClientsMgmt();
   else renderDashboard();
@@ -871,14 +893,14 @@ function renderDashboard(){
     <div class="kpi-card kpi-pending"><div class="kpi-label">Pending</div><div class="kpi-value">${c.pending}</div><div class="kpi-sub">awaiting</div></div>
     <div class="kpi-card kpi-ns"><div class="kpi-label">Not Started</div><div class="kpi-value">${c.notStart}</div><div class="kpi-sub">queued</div></div>
     <div class="kpi-card kpi-done"><div class="kpi-label">Done ✓</div><div class="kpi-value">${c.done}</div><div class="kpi-sub">completed</div></div>`;
-  buildTable(sorted(vt,'dashboard'),document.getElementById('dash-table-wrap'),false,'dashboard');
+  buildTable(sorted(searchFilter(vt),'dashboard'),document.getElementById('dash-table-wrap'),false,'dashboard');
 }
 function renderToday(){
   document.getElementById('today-date-str').textContent=new Date().toLocaleDateString('en-IN',{weekday:'long',day:'numeric',month:'long',year:'numeric'});
   const urgent=visibleTasks().filter(t=>{if(t.status==='Done')return false;const d=daysLeft(t.deadline);return t.status==='Overdue'||(d!==null&&d<=0);});
   document.getElementById('focus-count').textContent=urgent.length;
   document.getElementById('focus-badge').textContent=urgent.length;
-  buildTable(sorted(urgent,'today'),document.getElementById('today-table-wrap'),false,'today');
+  buildTable(sorted(searchFilter(urgent),'today'),document.getElementById('today-table-wrap'),false,'today');
 }
 function populateFilters(){
   const vt=visibleTasks();
@@ -913,7 +935,7 @@ function renderClientView(){
   const cur=sel.value||names[0]||'';
   sel.innerHTML=names.map(n=>`<option${n===cur?' selected':''}>${n}</option>`).join('');
   const f=vt.filter(t=>t.client===cur);
-  renderMiniKpis('client-kpis',f);buildTable(sorted(f,'client-view'),document.getElementById('client-table-wrap'),true,'client-view');
+  renderMiniKpis('client-kpis',f);buildTable(sorted(searchFilter(f),'client-view'),document.getElementById('client-table-wrap'),true,'client-view');
 }
 function renderAssigneeView(){
   const vt=visibleTasks();
@@ -922,7 +944,7 @@ function renderAssigneeView(){
   const cur=sel.value||names[0]||'';
   sel.innerHTML=names.map(n=>`<option${n===cur?' selected':''}>${n}</option>`).join('');
   const f=vt.filter(t=>t.assignee===cur);
-  renderMiniKpis('assignee-kpis',f);buildTable(sorted(f,'assignee-view'),document.getElementById('assignee-table-wrap'),true,'assignee-view');
+  renderMiniKpis('assignee-kpis',f);buildTable(sorted(searchFilter(f),'assignee-view'),document.getElementById('assignee-table-wrap'),true,'assignee-view');
 }
 function renderMiniKpis(id,rows){
   const ov=rows.filter(t=>t.status==='Overdue').length,ip=rows.filter(t=>t.status==='In Progress').length;
@@ -1278,7 +1300,68 @@ function doConfirm(title,msg,cb){ document.getElementById('confirm-title').textC
 function closeConfirm(e,force){ if(!force&&e&&e.target!==document.getElementById('confirm-overlay'))return; document.getElementById('confirm-overlay').classList.remove('open');confirmCallback=null; }
 document.getElementById('confirm-ok-btn').onclick=()=>{ if(confirmCallback)confirmCallback(); closeConfirm(null,true); };
 function showToast(msg,type){ const t=document.getElementById('toast');t.textContent=msg;t.className='toast '+(type||'');t.classList.add('show');setTimeout(()=>t.classList.remove('show'),2800); }
-function renderAll(){ renderDashboard();renderToday();populateFilters();applyFilters();if(currentPage==='team')renderTeam();if(currentPage==='clients-mgmt')renderClientsMgmt();if(currentPage==='client-view')renderClientView();if(currentPage==='assignee-view')renderAssigneeView(); }
+function renderAll(){
+  renderDashboard();renderToday();
+  populateFilters();applyFilters();
+  if(currentPage==='open')renderOpen();
+  if(currentPage==='completed')renderCompleted();
+  if(currentPage==='team')renderTeam();
+  if(currentPage==='clients-mgmt')renderClientsMgmt();
+  if(currentPage==='client-view')renderClientView();
+  if(currentPage==='assignee-view')renderAssigneeView();
+  // sidebar badges
+  const vt=visibleTasks();
+  const openCount=vt.filter(t=>t.status!=='Done').length;
+  const doneCount=vt.filter(t=>t.status==='Done').length;
+  document.getElementById('open-badge').textContent=openCount;
+  document.getElementById('completed-badge').textContent=doneCount;
+}
+
+// ── GLOBAL SEARCH ──────────────────────────────────────
+function getSearchTerm(){ return (document.getElementById('search-input').value||'').toLowerCase().trim(); }
+function searchFilter(arr){
+  const q=getSearchTerm();
+  if(!q) return arr;
+  return arr.filter(t=>`${t.task||''} ${t.client||''} ${t.assignee||''} ${t.remarks||''} ${t.dept||''}`.toLowerCase().includes(q));
+}
+function globalSearch(){
+  const p=currentPage;
+  if(p==='all'){applyFilters();}
+  else if(p==='today'){renderToday();}
+  else if(p==='client-view'){renderClientView();}
+  else if(p==='assignee-view'){renderAssigneeView();}
+  else if(p==='open'){renderOpen();}
+  else if(p==='completed'){renderCompleted();}
+  else{renderDashboard();}
+}
+
+// ── OPEN TASKS ─────────────────────────────────────────
+function renderOpen(){
+  const base=visibleTasks().filter(t=>t.status!=='Done');
+  // populate assignee filter
+  const asel=document.getElementById('of-assignee');
+  const curA=asel.value;
+  const anames=[...new Set(base.map(t=>t.assignee).filter(Boolean))].sort();
+  asel.innerHTML=`<option value="">All Assignees</option>`+anames.map(n=>`<option${n===curA?' selected':''}>${n}</option>`).join('');
+  const fs=document.getElementById('of-status').value;
+  const fp=document.getElementById('of-priority').value;
+  const fa=document.getElementById('of-assignee').value;
+  let filtered=searchFilter(base);
+  if(fs)filtered=filtered.filter(t=>t.status===fs);
+  if(fp)filtered=filtered.filter(t=>t.priority===fp);
+  if(fa)filtered=filtered.filter(t=>t.assignee===fa);
+  document.getElementById('open-sub').textContent=`${filtered.length} of ${base.length} task${base.length!==1?'s':''}`;
+  document.getElementById('open-count').textContent=`Showing ${filtered.length}`;
+  buildTable(sorted(filtered,'open'),document.getElementById('open-table-wrap'),false,'open');
+}
+function clearOpenFilters(){ ['of-status','of-priority','of-assignee'].forEach(id=>document.getElementById(id).value=''); renderOpen(); }
+
+// ── COMPLETED TASKS ────────────────────────────────────
+function renderCompleted(){
+  const vt=searchFilter(visibleTasks().filter(t=>t.status==='Done'));
+  document.getElementById('completed-sub').textContent=`${vt.length} completed task${vt.length!==1?'s':''}`;
+  buildTable(sorted(vt,'completed'),document.getElementById('completed-table-wrap'),false,'completed');
+}
 document.addEventListener('keydown',e=>{ if(e.key==='Escape'){closeTaskModal(null,true);closeAssigneeModal(null,true);closeClientModal(null,true);closeConfirm(null,true);} });
 </script>
 </body>
