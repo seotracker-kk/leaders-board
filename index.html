@@ -103,9 +103,9 @@ body{font-family:'Segoe UI',Arial,sans-serif;background:var(--gray100);color:var
 .filter-bar select{padding:7px 11px;border:1px solid var(--gray200);border-radius:8px;font-size:13px;background:#fff;cursor:pointer;outline:none}
 .filter-label{font-size:12px;font-weight:600;color:var(--gray600)}
 .active-count{margin-left:auto;font-size:12px;color:var(--gray400)}
-.table-wrap{background:#fff;border-radius:var(--radius);box-shadow:var(--shadow);overflow-x:auto}
+.table-wrap{background:#fff;border-radius:var(--radius);box-shadow:var(--shadow);overflow-x:auto;overflow-y:auto;max-height:calc(100vh - 230px)}
 .task-table{width:100%;border-collapse:collapse;min-width:720px}
-.task-table th{background:var(--navy);color:#fff;padding:10px 14px;text-align:left;font-size:12px;font-weight:600;white-space:nowrap;cursor:pointer;user-select:none}
+.task-table th{background:var(--navy);color:#fff;padding:10px 14px;text-align:left;font-size:12px;font-weight:600;white-space:nowrap;cursor:pointer;user-select:none;position:sticky;top:0;z-index:2}
 .task-table th:hover{background:var(--blue)}
 .task-table th.sorted-asc::after{content:" ↑"}.task-table th.sorted-desc::after{content:" ↓"}
 .task-table td{padding:10px 14px;border-bottom:1px solid var(--gray100);vertical-align:middle;font-size:13px}
@@ -174,7 +174,7 @@ tr:hover .row-actions{opacity:1}
 .services-grid{display:flex;flex-wrap:wrap;gap:8px;margin-top:4px}
 .svc-check{display:flex;align-items:center;gap:8px;padding:7px 14px;border:1.5px solid var(--gray200);border-radius:8px;cursor:pointer;font-size:13px;user-select:none;transition:all .15s;background:#fff}
 .svc-check:hover{border-color:var(--blue);background:#F0F7FF}
-.svc-check input[type=checkbox]{display:none}
+.svc-check input[type=checkbox]{position:absolute;opacity:0;width:0;height:0;pointer-events:none}
 .svc-check .cb-box{width:16px;height:16px;border:2px solid var(--gray400);border-radius:4px;display:flex;align-items:center;justify-content:center;flex-shrink:0;transition:all .15s;font-size:10px;color:transparent}
 .svc-check.checked{border-color:var(--blue);background:#EBF5FB;color:var(--blue);font-weight:700}
 .svc-check.checked .cb-box{background:var(--blue);border-color:var(--blue);color:#fff}
@@ -199,7 +199,7 @@ tr:hover .row-actions{opacity:1}
 .quick-add-panel .qa-svc label .cb-box{width:14px;height:14px;border:2px solid var(--gray400);border-radius:3px;display:flex;align-items:center;justify-content:center;flex-shrink:0;font-size:9px;color:transparent;transition:all .15s}
 .quick-add-panel .qa-svc label.checked{border-color:var(--blue);background:#EBF5FB;color:var(--blue);font-weight:700}
 .quick-add-panel .qa-svc label.checked .cb-box{background:var(--blue);border-color:var(--blue);color:#fff}
-.quick-add-panel .qa-svc input[type=checkbox]{display:none}
+.quick-add-panel .qa-svc input[type=checkbox]{position:absolute;opacity:0;width:0;height:0;pointer-events:none}
 
 /* ── LOADING INDICATOR ── */
 .loading-bar{position:fixed;top:0;left:0;right:0;height:3px;background:linear-gradient(90deg,var(--accent),var(--blue));z-index:9998;display:none;animation:loadSlide 1.5s infinite}
@@ -444,17 +444,17 @@ tr:hover .row-actions{opacity:1}
     <div class="modal-header"><div class="modal-title" id="assignee-modal-title">Add Team Member</div><button class="modal-close" onclick="closeAssigneeModal(null,true)">✕</button></div>
     <div class="modal-body">
       <div class="form-grid">
-        <div class="form-group full"><label>Full Name *</label><input type="text" id="a-name"/></div>
-        <div class="form-group"><label>Email ID</label><input type="email" id="a-email"/></div>
-        <div class="form-group"><label>WhatsApp Number</label><input type="tel" id="a-whatsapp" placeholder="+91 98765 43210"/></div>
-        <div class="form-group"><label>Department</label>
+        <div class="form-group full"><label>Full Name *</label><input type="text" id="a-name" placeholder="Enter full name"/></div>
+        <div class="form-group"><label>Email ID *</label><input type="email" id="a-email" placeholder="name@example.com" oninput="checkEmailExists()"/><div id="email-exists-msg" style="display:none;color:#C0392B;font-size:11px;margin-top:3px;font-weight:600"></div></div>
+        <div class="form-group"><label>WhatsApp Number *</label><input type="tel" id="a-whatsapp" placeholder="+91 98765 43210"/></div>
+        <div class="form-group"><label>Department *</label>
           <select id="a-dept" onchange="handleNewDept('a-dept','new-dept-wrap')"><option value="">Select…</option></select>
           <div class="add-new-row" id="new-dept-wrap">
             <input type="text" id="new-dept-input" placeholder="Type new department…"/>
             <button onclick="confirmNewDept('new-dept-input','a-dept','new-dept-wrap')">Add</button>
           </div>
         </div>
-        <div class="form-group"><label>Position</label>
+        <div class="form-group"><label>Position *</label>
           <select id="a-position" onchange="handleNewPosition()"><option value="">Select…</option><option>Co-founder</option><option>AVP</option><option>Manager</option><option>AM</option><option>TL</option><option>Executive</option><option value="__new__">➕ Add new position…</option></select>
           <div class="add-new-row" id="new-position-wrap"><input type="text" id="new-position-input" placeholder="Type new position…"/><button onclick="confirmNewPosition()">Add</button></div>
         </div>
@@ -1016,8 +1016,8 @@ function onTaskClientChange(){
     document.getElementById('t-client').value='';
     // build services checkboxes
     document.getElementById('qa-svc-grid').innerHTML=allServices().map(s=>
-      `<label onclick="this.classList.toggle('checked');this.querySelector('input').checked=this.classList.contains('checked')">
-        <input type="checkbox" value="${escHtml(s)}">
+      `<label class="svc-check">
+        <input type="checkbox" value="${escHtml(s)}" onchange="syncSvcLabel(this)">
         <span class="cb-box">✓</span>${escHtml(s)}</label>`
     ).join('');
     document.getElementById('qa-client-panel').classList.add('show');
@@ -1035,7 +1035,12 @@ function closeQAPanel(panelId, selectId){
 async function quickSaveAssignee(){
   const name=document.getElementById('qa-a-name').value.trim();
   if(!name){showToast('Name is required','error');return;}
-  const obj={name,dept:document.getElementById('qa-a-dept').value,position:document.getElementById('qa-a-position').value,email:document.getElementById('qa-a-email').value.trim(),whatsapp:document.getElementById('qa-a-whatsapp').value.trim()};
+  const qaEmail=document.getElementById('qa-a-email').value.trim();
+  if(qaEmail){
+    const dupChk=assignees.find(a=>a.email&&a.email.toLowerCase()===qaEmail.toLowerCase());
+    if(dupChk){showToast(`${dupChk.name} is already a member with this email`,'error');return;}
+  }
+  const obj={name,dept:document.getElementById('qa-a-dept').value,position:document.getElementById('qa-a-position').value,email:qaEmail,whatsapp:document.getElementById('qa-a-whatsapp').value.trim()};
   setLoading(true);
   try {
     await db.collection('assignees').add({...obj,id:maxId(assignees)});
@@ -1056,7 +1061,7 @@ async function quickSaveAssignee(){
 async function quickSaveClient(){
   const name=document.getElementById('qa-c-name').value.trim();
   if(!name){showToast('Client name is required','error');return;}
-  const services=[...document.querySelectorAll('#qa-svc-grid .checked input')].map(el=>el.value);
+  const services=[...document.querySelectorAll('#qa-svc-grid input[type=checkbox]:checked')].map(el=>el.value);
   const obj={name,services,website:document.getElementById('qa-c-website').value.trim()};
   setLoading(true);
   try {
@@ -1170,10 +1175,35 @@ function confirmNewPosition(){
   saveConfig();
   buildPositionSelect(val);document.getElementById('new-position-wrap').classList.remove('show');document.getElementById('new-position-input').value='';
 }
+function checkEmailExists(){
+  const email=document.getElementById('a-email').value.trim().toLowerCase();
+  const msg=document.getElementById('email-exists-msg');
+  if(!email){msg.style.display='none';return;}
+  const existing=assignees.find(a=>a.email&&a.email.toLowerCase()===email&&a._fid!==editingAssigneeId);
+  if(existing){
+    msg.textContent=`⚠️ ${existing.name} is already registered with this email`;
+    msg.style.display='block';
+  } else {
+    msg.style.display='none';
+  }
+}
 async function saveAssignee(){
-  const name=document.getElementById('a-name').value.trim();if(!name){showToast('Name is required','error');return;}
-  let pos=document.getElementById('a-position').value;if(pos==='__new__')pos=document.getElementById('new-position-input').value.trim();
-  const obj={name,email:document.getElementById('a-email').value.trim(),whatsapp:document.getElementById('a-whatsapp').value.trim(),dept:document.getElementById('a-dept').value,position:pos};
+  const name=document.getElementById('a-name').value.trim();
+  if(!name){showToast('Name is required','error');return;}
+  const email=document.getElementById('a-email').value.trim();
+  if(!email){showToast('Email ID is required','error');return;}
+  const whatsapp=document.getElementById('a-whatsapp').value.trim();
+  if(!whatsapp){showToast('WhatsApp number is required','error');return;}
+  const dept=document.getElementById('a-dept').value;
+  if(!dept||dept==='__new_dept__'){showToast('Department is required','error');return;}
+  let pos=document.getElementById('a-position').value;
+  if(pos==='__new__')pos=document.getElementById('new-position-input').value.trim();
+  if(!pos){showToast('Position is required','error');return;}
+  // Duplicate email check
+  const emailLower=email.toLowerCase();
+  const existing=assignees.find(a=>a.email&&a.email.toLowerCase()===emailLower&&a._fid!==editingAssigneeId);
+  if(existing){showToast(`${existing.name} is already a member with this email`,'error');return;}
+  const obj={name,email,whatsapp,dept,position:pos};
   setLoading(true);
   try {
     if(editingAssigneeId){ await db.collection('assignees').doc(editingAssigneeId).update(obj); showToast('Member updated ✓','success'); }
@@ -1195,21 +1225,21 @@ async function deleteMember(fid){
 function buildServicesGrid(selected){
   document.getElementById('services-grid').innerHTML=allServices().map(s=>{
     const on=selected.includes(s);
-    return `<label class="svc-check${on?' checked':''}" onclick="toggleSvc(this)">
-      <input type="checkbox" value="${escHtml(s)}"${on?' checked':''}>
+    return `<label class="svc-check${on?' checked':''}">
+      <input type="checkbox" value="${escHtml(s)}"${on?' checked':''} onchange="syncSvcLabel(this)">
       <span class="cb-box">✓</span>${escHtml(s)}</label>`;
   }).join('');
-  // hint
   const hint=document.getElementById('services-hint');
   if(hint) hint.style.display='block';
 }
-function toggleSvc(el){el.classList.toggle('checked');el.querySelector('input').checked=el.classList.contains('checked');}
+// Sync visual checked state from the real checkbox value
+function syncSvcLabel(input){ input.closest('.svc-check').classList.toggle('checked', input.checked); }
 function toggleNewService(){document.getElementById('new-service-wrap').classList.toggle('show');if(document.getElementById('new-service-wrap').classList.contains('show'))setTimeout(()=>document.getElementById('new-service-input').focus(),50);}
 function confirmNewService(){
   const val=document.getElementById('new-service-input').value.trim();if(!val)return;
   if(!customServices.includes(val))customServices.push(val);
   saveConfig();
-  const sel=[...document.querySelectorAll('#services-grid .svc-check.checked')].map(el=>el.querySelector('input').value);
+  const sel=[...document.querySelectorAll('#services-grid input[type=checkbox]:checked')].map(el=>el.value);
   buildServicesGrid([...sel,val]);document.getElementById('new-service-input').value='';document.getElementById('new-service-wrap').classList.remove('show');
 }
 function openClientModal(fid){
@@ -1224,7 +1254,7 @@ function openClientModal(fid){
 function closeClientModal(e,force){ if(!force&&e&&e.target!==document.getElementById('client-overlay'))return; document.getElementById('client-overlay').classList.remove('open');editingClientId=null; }
 async function saveClient(){
   const name=document.getElementById('c-name').value.trim();if(!name){showToast('Client name is required','error');return;}
-  const services=[...document.querySelectorAll('#services-grid .svc-check.checked')].map(el=>el.querySelector('input').value);
+  const services=[...document.querySelectorAll('#services-grid input[type=checkbox]:checked')].map(el=>el.value);
   const obj={name,services,website:document.getElementById('c-website').value.trim()};
   setLoading(true);
   try {
