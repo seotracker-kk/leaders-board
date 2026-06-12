@@ -122,6 +122,7 @@ body{font-family:'Segoe UI',Arial,sans-serif;background:var(--gray100);color:var
 .svc-badge{background:#EBF5FB;color:#1A5276;padding:2px 8px;border-radius:4px;font-size:11px;font-weight:600;margin:1px 2px;display:inline-block}
 .days-overdue{color:#C0392B;font-weight:700}.days-soon{color:#B7791F;font-weight:600}.days-ok{color:var(--green)}.days-done{color:var(--gray400)}
 .tag{display:inline-block;padding:2px 8px;border-radius:4px;font-size:11px;font-weight:600;background:var(--gray100);color:var(--gray600)}
+.tag-gray{background:#F1F5F9;color:#64748B;font-style:italic}
 .row-actions{display:flex;gap:6px;opacity:0;transition:opacity .15s}
 tr:hover .row-actions{opacity:1}
 .divider{height:1px;background:var(--gray200);margin:20px 0}
@@ -941,6 +942,7 @@ function daysCell(t){
 // ═══════════════════════════════════════════════════════
 const COLS=[
   {key:'task',label:'Task / Activity',s:true},{key:'assignee',label:'Assignee',s:true},
+  {key:'addedBy',label:'Assigned By',s:true},
   {key:'client',label:'Client',s:true},{key:'dept',label:'Department',s:true},
   {key:'priority',label:'Priority',s:true},{key:'deadline',label:'Deadline',s:true},
   {key:'status',label:'Status',s:true},{key:'days',label:'Days Left',s:true},{key:'_',label:'',s:false}
@@ -956,8 +958,9 @@ function buildTable(rows,container,compact,page){
     return `<th class="${cls}" onclick="setSort('${c.key}','${page}')">${c.label}</th>`;
   }).join('');
   const trs=rows.map(t=>`<tr onclick="openTaskModal('${t._fid}')" style="cursor:pointer">
-    <td><div class="task-name">${escHtml(t.task)}${t.recurrence&&t.recurrence.type&&t.recurrence.type!=='none'?`<span class="recur-badge">🔄 ${recurLabel(t.recurrence)}</span>`:''}</div><div class="task-remarks">${escHtml(t.remarks||'')}</div><div class="alloc-by">by ${escHtml(t.addedBy||'—')}</div></td>
+    <td><div class="task-name">${escHtml(t.task)}${t.recurrence&&t.recurrence.type&&t.recurrence.type!=='none'?`<span class="recur-badge">🔄 ${recurLabel(t.recurrence)}</span>`:''}</div><div class="task-remarks">${escHtml(t.remarks||'')}</div></td>
     <td><span class="tag">${escHtml(t.assignee||'—')}</span></td>
+    <td><span class="tag tag-gray">${escHtml(t.addedBy||'—')}</span></td>
     <td>${escHtml(t.client||'—')}</td>
     ${compact?'':`<td><span class="tag">${escHtml(t.dept||'—')}</span></td>`}
     <td>${priorityBadge(t.priority)}</td>
