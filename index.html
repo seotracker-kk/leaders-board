@@ -230,6 +230,9 @@ tr:hover .row-actions{opacity:1}
 .recur-badge{display:inline-flex;align-items:center;gap:3px;padding:1px 6px;border-radius:8px;font-size:10px;font-weight:700;background:#EDE9FE;color:#5B21B6;margin-left:5px;vertical-align:middle}
 /* ── ALLOCBY ── */
 .alloc-by{font-size:10px;color:var(--gray400);margin-top:2px}
+#t-deadline[readonly]{background:var(--gray50);color:var(--gray600);cursor:not-allowed;border-color:var(--gray200)}
+.deadline-auto-note{font-size:11px;color:var(--blue);margin-top:4px;display:none}
+.deadline-auto-note.show{display:block}
 /* ── DATE FILTER STRIP ── */
 .date-strip{background:#fff;border-bottom:1px solid var(--gray200);padding:7px 28px;display:none;align-items:center;gap:10px;flex-wrap:wrap}
 .date-strip.show{display:flex}
@@ -474,6 +477,46 @@ tr:hover .row-actions{opacity:1}
       <div class="form-grid">
         <div class="form-group full"><label>Task / Activity *</label><input type="text" id="t-task" placeholder="Describe the task…"/></div>
 
+        <!-- RECURRENCE (top of form) -->
+        <div class="form-group full">
+          <label>Recurrence</label>
+          <select id="t-recurrence" onchange="onRecurrenceChange()">
+            <option value="none">One-time (no repeat)</option>
+            <option value="weekly">Weekly</option>
+            <option value="biweekly">Bi-weekly</option>
+            <option value="monthly">Monthly</option>
+          </select>
+          <!-- Weekly: pick a day -->
+          <div class="recur-row" id="recur-weekly-panel" style="display:none">
+            <select id="t-weekly-day" onchange="autoSetRecurDeadline()">
+              <option value="1">Monday</option>
+              <option value="2">Tuesday</option>
+              <option value="3">Wednesday</option>
+              <option value="4">Thursday</option>
+              <option value="5">Friday</option>
+              <option value="6">Saturday</option>
+            </select>
+            <span style="font-size:12px;color:var(--gray400)">— repeats every week on this day</span>
+          </div>
+          <!-- Bi-weekly: pick 1st&3rd or 2nd&4th + day -->
+          <div class="recur-row" id="recur-biweekly-panel" style="display:none">
+            <select id="t-biweekly-pattern" onchange="autoSetRecurDeadline()"></select>
+            <span style="font-size:12px;color:var(--gray400)">— repeats twice a month</span>
+          </div>
+          <!-- Monthly options -->
+          <div class="recur-row" id="recur-monthly-panel" style="display:none">
+            <select id="t-monthly-type" onchange="onMonthlyTypeChange()">
+              <option value="date">Specific date of month</option>
+              <option value="dow">Day-of-week pattern</option>
+            </select>
+            <input type="number" id="t-recur-dom" min="1" max="31" placeholder="Day (1–31)" style="width:110px;display:none" onchange="autoSetRecurDeadline()"/>
+            <div id="recur-dow-wrap" class="recur-row" style="display:none">
+              <select id="t-recur-week" onchange="autoSetRecurDeadline()"><option value="first">First</option><option value="second">Second</option><option value="third">Third</option><option value="fourth">Fourth</option><option value="last">Last</option></select>
+              <select id="t-recur-weekday" onchange="autoSetRecurDeadline()"><option value="1">Monday</option><option value="2">Tuesday</option><option value="3">Wednesday</option><option value="4">Thursday</option><option value="5">Friday</option><option value="6">Saturday</option><option value="0">Sunday</option></select>
+            </div>
+          </div>
+        </div>
+
         <div class="form-group">
           <label>Assignee</label>
           <select id="t-assignee" onchange="onTaskAssigneeChange()"><option value="">Select…</option></select>
@@ -530,50 +573,10 @@ tr:hover .row-actions{opacity:1}
           </div>
         </div>
         <div class="form-group"><label>Priority</label><select id="t-priority"><option value="">Select…</option><option>High</option><option>Medium</option><option>Low</option></select></div>
-        <div class="form-group"><label>Deadline</label><input type="date" id="t-deadline"/></div>
+        <div class="form-group"><label>Deadline</label><input type="date" id="t-deadline"/><div class="deadline-auto-note" id="deadline-auto-note">📅 Auto-set from recurrence (IST)</div></div>
         <div class="form-group"><label>Status</label><select id="t-status" onchange="onStatusChange()"><option>Not Started</option><option>Pending</option><option>In Progress</option><option>Done</option><option>Overdue</option><option>On Hold</option></select></div>
         <div class="form-group"><label>Allocated By <span class="auto-note">(auto)</span></label><input type="text" id="t-added-by" readonly style="background:var(--gray50);color:var(--gray600)"/></div>
         <div class="form-group full"><label>Remarks</label><textarea id="t-remarks" placeholder="Notes, context, or next steps…"></textarea></div>
-
-        <!-- RECURRENCE -->
-        <div class="form-group full">
-          <label>Recurrence</label>
-          <select id="t-recurrence" onchange="onRecurrenceChange()">
-            <option value="none">One-time (no repeat)</option>
-            <option value="weekly">Weekly</option>
-            <option value="biweekly">Bi-weekly</option>
-            <option value="monthly">Monthly</option>
-          </select>
-          <!-- Weekly: pick a day -->
-          <div class="recur-row" id="recur-weekly-panel" style="display:none">
-            <select id="t-weekly-day" onchange="autoSetRecurDeadline()">
-              <option value="1">Monday</option>
-              <option value="2">Tuesday</option>
-              <option value="3">Wednesday</option>
-              <option value="4">Thursday</option>
-              <option value="5">Friday</option>
-              <option value="6">Saturday</option>
-            </select>
-            <span style="font-size:12px;color:var(--gray400)">— repeats every week on this day</span>
-          </div>
-          <!-- Bi-weekly: pick 1st&3rd or 2nd&4th + day -->
-          <div class="recur-row" id="recur-biweekly-panel" style="display:none">
-            <select id="t-biweekly-pattern" onchange="autoSetRecurDeadline()"></select>
-            <span style="font-size:12px;color:var(--gray400)">— repeats twice a month</span>
-          </div>
-          <!-- Monthly options -->
-          <div class="recur-row" id="recur-monthly-panel" style="display:none">
-            <select id="t-monthly-type" onchange="onMonthlyTypeChange()">
-              <option value="date">Specific date of month</option>
-              <option value="dow">Day-of-week pattern</option>
-            </select>
-            <input type="number" id="t-recur-dom" min="1" max="31" placeholder="Day (1–31)" style="width:110px;display:none"/>
-            <div id="recur-dow-wrap" class="recur-row" style="display:none">
-              <select id="t-recur-week"><option value="first">First</option><option value="second">Second</option><option value="third">Third</option><option value="fourth">Fourth</option><option value="last">Last</option></select>
-              <select id="t-recur-weekday"><option value="1">Monday</option><option value="2">Tuesday</option><option value="3">Wednesday</option><option value="4">Thursday</option><option value="5">Friday</option><option value="6">Saturday</option><option value="0">Sunday</option></select>
-            </div>
-          </div>
-        </div>
 
         <!-- ON HOLD REASON (shown when status = On Hold) -->
         <div class="form-group full" id="onhold-reason-row" style="display:none">
@@ -1358,6 +1361,7 @@ function openTaskModal(fid){
   document.getElementById('recur-monthly-panel').style.display='none';
   document.getElementById('t-recur-dom').style.display='none';
   document.getElementById('recur-dow-wrap').style.display='none';
+  setDeadlineLock(false);
   document.getElementById('onhold-reason-row').style.display='none';
   document.getElementById('t-onhold-reason').value='';
   // Comments section
@@ -1378,7 +1382,13 @@ function openTaskModal(fid){
     // Load recurrence
     if(t.recurrence&&t.recurrence.type!=='none'){
       document.getElementById('t-recurrence').value=t.recurrence.type||'none';
-      onRecurrenceChange();
+      // Show panels without overwriting the stored deadline
+      const _v=t.recurrence.type;
+      document.getElementById('recur-weekly-panel').style.display=_v==='weekly'?'flex':'none';
+      document.getElementById('recur-biweekly-panel').style.display=_v==='biweekly'?'flex':'none';
+      document.getElementById('recur-monthly-panel').style.display=_v==='monthly'?'flex':'none';
+      if(_v==='monthly') onMonthlyTypeChange();
+      setDeadlineLock(true);
       if(t.recurrence.type==='weekly'){
         document.getElementById('t-weekly-day').value=t.recurrence.weekday||1;
       } else if(t.recurrence.type==='biweekly'){
@@ -1432,26 +1442,61 @@ function buildBiweeklyOptions(){
     `<option value="${d.v}-2-4">2nd &amp; 4th ${d.l}</option>`
   ]).join('');
 }
+function setDeadlineLock(locked){
+  const inp=document.getElementById('t-deadline');
+  const note=document.getElementById('deadline-auto-note');
+  inp.readOnly=locked;
+  if(locked){inp.style.background='var(--gray50)';inp.style.color='var(--gray600)';inp.style.cursor='not-allowed';inp.style.borderColor='var(--gray200)';note.classList.add('show');}
+  else{inp.style.background='';inp.style.color='';inp.style.cursor='';inp.style.borderColor='';note.classList.remove('show');}
+}
 function autoSetRecurDeadline(){
   const type=document.getElementById('t-recurrence').value;
-  const today=new Date(); today.setHours(0,0,0,0);
+  const today=getISTDate(); today.setHours(0,0,0,0);
   if(type==='weekly'){
     const wd=parseInt(document.getElementById('t-weekly-day').value);
     const next=new Date(today);
-    // find next occurrence of wd (if today matches, use today)
     while(next.getDay()!==wd) next.setDate(next.getDate()+1);
-    document.getElementById('t-deadline').value=next.toISOString().split('T')[0];
+    document.getElementById('t-deadline').value=istDateStr(next);
+    setDeadlineLock(true);
   } else if(type==='biweekly'){
     const parts=document.getElementById('t-biweekly-pattern').value.split('-');
     const wd=parseInt(parts[0]);
     const weeks=[parseInt(parts[1]),parseInt(parts[2])].sort((a,b)=>a-b);
-    // Find next upcoming occurrence in pattern
     for(let mo=0;mo<3;mo++){
       const m=(today.getMonth()+mo)%12;
       const y=today.getFullYear()+Math.floor((today.getMonth()+mo)/12);
       for(const w of weeks){
         const d=getNthWeekdayOfMonth(y,m,wd,w);
-        if(d&&d>=today){document.getElementById('t-deadline').value=d.toISOString().split('T')[0];return;}
+        if(d&&d>=today){document.getElementById('t-deadline').value=istDateStr(d);setDeadlineLock(true);return;}
+      }
+    }
+  } else if(type==='monthly'){
+    const mt=document.getElementById('t-monthly-type').value;
+    if(mt==='date'){
+      const dom=parseInt(document.getElementById('t-recur-dom').value);
+      if(!dom) return;
+      // Next occurrence of this date
+      let y=today.getFullYear(),m=today.getMonth();
+      const cand=new Date(y,m,Math.min(dom,new Date(y,m+1,0).getDate()));
+      if(cand<today){m++;if(m>11){m=0;y++;}}
+      const d2=new Date(y,m,Math.min(dom,new Date(y,m+1,0).getDate()));
+      document.getElementById('t-deadline').value=istDateStr(d2);
+      setDeadlineLock(true);
+    } else {
+      const week=document.getElementById('t-recur-week').value;
+      const wd=parseInt(document.getElementById('t-recur-weekday').value);
+      for(let mo=0;mo<3;mo++){
+        const m=(today.getMonth()+mo)%12;
+        const y=today.getFullYear()+Math.floor((today.getMonth()+mo)/12);
+        let d3;
+        if(week==='last'){
+          d3=new Date(y,m+1,0);
+          while(d3.getDay()!==wd) d3.setDate(d3.getDate()-1);
+        } else {
+          const nMap={first:1,second:2,third:3,fourth:4};
+          d3=getNthWeekdayOfMonth(y,m,wd,nMap[week]||1);
+        }
+        if(d3&&d3>=today){document.getElementById('t-deadline').value=istDateStr(d3);setDeadlineLock(true);return;}
       }
     }
   }
@@ -1461,8 +1506,15 @@ function onRecurrenceChange(){
   document.getElementById('recur-weekly-panel').style.display=v==='weekly'?'flex':'none';
   document.getElementById('recur-biweekly-panel').style.display=v==='biweekly'?'flex':'none';
   document.getElementById('recur-monthly-panel').style.display=v==='monthly'?'flex':'none';
-  if(v==='monthly') onMonthlyTypeChange();
-  if(v==='weekly'||v==='biweekly') autoSetRecurDeadline();
+  if(v==='none'){
+    setDeadlineLock(false);
+    document.getElementById('t-deadline').value='';
+  } else if(v==='monthly'){
+    onMonthlyTypeChange();
+    autoSetRecurDeadline();
+  } else {
+    autoSetRecurDeadline();
+  }
 }
 function onMonthlyTypeChange(){
   const v=document.getElementById('t-monthly-type').value;
@@ -1482,6 +1534,16 @@ function getRecurrenceObj(){
   const mt=document.getElementById('t-monthly-type').value;
   if(mt==='date') return {type:'monthly',monthlyType:'date',dayOfMonth:parseInt(document.getElementById('t-recur-dom').value)||1};
   return {type:'monthly',monthlyType:'dow',week:document.getElementById('t-recur-week').value,weekday:parseInt(document.getElementById('t-recur-weekday').value)};
+}
+// ── IST date helper ──────────────────────────────────────
+function getISTDate(){
+  // Always compute today in IST (UTC+5:30) regardless of user's system timezone
+  const now=new Date();
+  const utcMs=now.getTime()+(now.getTimezoneOffset()*60000);
+  return new Date(utcMs+(5.5*3600000));
+}
+function istDateStr(d){
+  return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0');
 }
 const _WD_NAMES=['Sun','Mon','Tue','Wed','Thu','Fri','Sat'];
 function recurLabel(r){
