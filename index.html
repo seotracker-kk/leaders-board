@@ -224,6 +224,31 @@ tr:hover .row-actions{opacity:1}
 ::-webkit-scrollbar{width:6px;height:6px}::-webkit-scrollbar-track{background:transparent}
 ::-webkit-scrollbar-thumb{background:var(--gray200);border-radius:3px}
 
+/* ── ON HOLD BADGE ── */
+.s-onhold{background:#F3E8FF;color:#6D28D9}
+/* ── RECUR BADGE ── */
+.recur-badge{display:inline-flex;align-items:center;gap:3px;padding:1px 6px;border-radius:8px;font-size:10px;font-weight:700;background:#EDE9FE;color:#5B21B6;margin-left:5px;vertical-align:middle}
+/* ── ALLOCBY ── */
+.alloc-by{font-size:10px;color:var(--gray400);margin-top:2px}
+/* ── DATE FILTER STRIP ── */
+.date-strip{background:#fff;border-bottom:1px solid var(--gray200);padding:7px 28px;display:none;align-items:center;gap:10px;flex-wrap:wrap}
+.date-strip.show{display:flex}
+.date-strip select,.date-strip input[type=date]{padding:5px 10px;border:1.5px solid var(--gray200);border-radius:7px;font-size:12px;outline:none;background:#fff}
+.date-strip select:focus,.date-strip input:focus{border-color:var(--blue)}
+.date-strip label{font-size:11px;font-weight:700;color:var(--gray600);text-transform:uppercase;letter-spacing:.3px}
+/* ── RECURRENCE FORM ── */
+.recur-row{display:flex;gap:8px;flex-wrap:wrap;align-items:center;margin-top:6px}
+.recur-row select,.recur-row input[type=number]{padding:7px 10px;border:1.5px solid var(--gray200);border-radius:7px;font-size:13px;outline:none;font-family:inherit}
+.recur-row select:focus,.recur-row input:focus{border-color:var(--blue)}
+/* ── COMMENTS ── */
+.comment-list{max-height:180px;overflow-y:auto;margin-bottom:8px;display:flex;flex-direction:column;gap:6px}
+.comment-item{background:var(--gray50);border-radius:8px;padding:10px 12px;border-left:3px solid var(--blue)}
+.comment-item.hold{border-left-color:var(--accent)}
+.comment-meta{font-size:10px;color:var(--gray400);font-weight:600;margin-bottom:3px}
+.comment-text{font-size:13px;color:var(--gray800);line-height:1.5}
+.comment-add{display:flex;gap:8px;margin-top:4px}
+.comment-add input{flex:1;padding:7px 10px;border:1.5px solid var(--gray200);border-radius:7px;font-size:13px;outline:none;font-family:inherit}
+.comment-add input:focus{border-color:var(--blue)}
 /* ── CHARTS ── */
 .charts-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:16px;margin-top:20px}
 .chart-card{background:#fff;border-radius:var(--radius);padding:18px 20px 14px;box-shadow:var(--shadow)}
@@ -323,6 +348,25 @@ tr:hover .row-actions{opacity:1}
       <button class="btn btn-primary" onclick="openTaskModal()">＋ Add Task</button>
     </header>
 
+    <!-- DATE FILTER STRIP (visible on task pages) -->
+    <div class="date-strip" id="date-strip">
+      <label>📅 Deadline:</label>
+      <select id="date-filter" onchange="globalDateChange()">
+        <option value="all">All Time</option>
+        <option value="today_only">Today</option>
+        <option value="7">Last 7 Days</option>
+        <option value="14">Last 14 Days</option>
+        <option value="this_month">This Month</option>
+        <option value="last_month">Last Month</option>
+        <option value="custom">Custom Range…</option>
+      </select>
+      <div id="custom-date-panel" style="display:none;gap:8px;align-items:center" class="date-strip" style="border:none;padding:0;background:transparent">
+        <input type="date" id="custom-date-from" onchange="applyCustomDateFilter()"/>
+        <span style="color:var(--gray400);font-size:13px">→</span>
+        <input type="date" id="custom-date-to" onchange="applyCustomDateFilter()"/>
+      </div>
+    </div>
+
     <div class="content">
       <div class="page active" id="page-dashboard">
         <div class="kpi-grid" id="kpi-grid"></div>
@@ -394,7 +438,7 @@ tr:hover .row-actions{opacity:1}
         <div class="section-header"><div><div class="section-title">Open Tasks</div><div class="section-sub" id="open-sub"></div></div></div>
         <div class="filter-bar">
           <span class="filter-label">Filter:</span>
-          <select id="of-status" onchange="renderOpen()"><option value="">All Statuses</option><option>Overdue</option><option>Pending</option><option>In Progress</option><option>Not Started</option></select>
+          <select id="of-status" onchange="renderOpen()"><option value="">All Statuses</option><option>Overdue</option><option>Pending</option><option>In Progress</option><option>Not Started</option><option>On Hold</option></select>
           <select id="of-priority" onchange="renderOpen()"><option value="">All Priorities</option><option>High</option><option>Medium</option><option>Low</option></select>
           <select id="of-assignee" onchange="renderOpen()"><option value="">All Assignees</option></select>
           <button class="btn btn-secondary btn-sm" onclick="clearOpenFilters()">Clear</button>
@@ -486,9 +530,47 @@ tr:hover .row-actions{opacity:1}
         </div>
         <div class="form-group"><label>Priority</label><select id="t-priority"><option value="">Select…</option><option>High</option><option>Medium</option><option>Low</option></select></div>
         <div class="form-group"><label>Deadline</label><input type="date" id="t-deadline"/></div>
-        <div class="form-group"><label>Status</label><select id="t-status"><option>Not Started</option><option>Pending</option><option>In Progress</option><option>Done</option><option>Overdue</option></select></div>
-        <div class="form-group"><label>Added By</label><input type="text" id="t-added-by" readonly style="background:var(--gray50);color:var(--gray600)"/></div>
+        <div class="form-group"><label>Status</label><select id="t-status" onchange="onStatusChange()"><option>Not Started</option><option>Pending</option><option>In Progress</option><option>Done</option><option>Overdue</option><option>On Hold</option></select></div>
+        <div class="form-group"><label>Allocated By <span class="auto-note">(auto)</span></label><input type="text" id="t-added-by" readonly style="background:var(--gray50);color:var(--gray600)"/></div>
         <div class="form-group full"><label>Remarks</label><textarea id="t-remarks" placeholder="Notes, context, or next steps…"></textarea></div>
+
+        <!-- RECURRENCE -->
+        <div class="form-group full">
+          <label>Recurrence</label>
+          <select id="t-recurrence" onchange="onRecurrenceChange()">
+            <option value="none">One-time (no repeat)</option>
+            <option value="weekly">Weekly</option>
+            <option value="biweekly">Bi-weekly (every 2 weeks)</option>
+            <option value="monthly">Monthly</option>
+          </select>
+          <div class="recur-row" id="recur-monthly-panel" style="display:none">
+            <select id="t-monthly-type" onchange="onMonthlyTypeChange()">
+              <option value="date">Specific date of month</option>
+              <option value="dow">Day-of-week pattern</option>
+            </select>
+            <input type="number" id="t-recur-dom" min="1" max="31" placeholder="Day (1–31)" style="width:110px;display:none"/>
+            <div id="recur-dow-wrap" class="recur-row" style="display:none">
+              <select id="t-recur-week"><option value="first">First</option><option value="second">Second</option><option value="third">Third</option><option value="fourth">Fourth</option><option value="last">Last</option></select>
+              <select id="t-recur-weekday"><option value="1">Monday</option><option value="2">Tuesday</option><option value="3">Wednesday</option><option value="4">Thursday</option><option value="5">Friday</option><option value="6">Saturday</option><option value="0">Sunday</option></select>
+            </div>
+          </div>
+        </div>
+
+        <!-- ON HOLD REASON (shown when status = On Hold) -->
+        <div class="form-group full" id="onhold-reason-row" style="display:none">
+          <label>Reason for Hold *</label>
+          <input type="text" id="t-onhold-reason" placeholder="Briefly explain why this task is on hold…"/>
+        </div>
+
+        <!-- COMMENTS (edit mode only) -->
+        <div class="form-group full" id="comments-section" style="display:none">
+          <label>Comments / Activity</label>
+          <div class="comment-list" id="comments-list"></div>
+          <div class="comment-add">
+            <input type="text" id="new-comment" placeholder="Add a comment…" onkeydown="if(event.key==='Enter'){event.preventDefault();addTaskComment();}"/>
+            <button class="btn btn-secondary btn-sm" onclick="addTaskComment()">Post</button>
+          </div>
+        </div>
       </div>
     </div>
     <div class="modal-footer"><button class="btn btn-secondary" onclick="closeTaskModal(null,true)">Cancel</button><button class="btn btn-primary" onclick="saveTask()">Save Task</button></div>
@@ -586,6 +668,7 @@ let tasks=[], assignees=[], clients=[], customPositions=[], customServices=[], c
 let editingTaskId=null, editingAssigneeId=null, editingClientId=null, confirmCallback=null;
 let currentPage='dashboard', currentUser=null;
 let unsubscribers=[];
+let globalDateFilter={type:'all', from:null, to:null};
 const pageSort={dashboard:{col:null,dir:1},today:{col:'days',dir:1},all:{col:'days',dir:1},'client-view':{col:'days',dir:1},'assignee-view':{col:'days',dir:1},open:{col:'days',dir:1},completed:{col:'deadline',dir:-1}};
 const NAV_ORDER=['dashboard','today','all','client-view','assignee-view','open','completed','team','clients-mgmt'];
 const BASE_POSITIONS=["Co-founder","AVP","Manager","AM","TL","Executive"];
@@ -819,7 +902,7 @@ function daysLeft(dl){
 }
 function daysLeftNum(t){ if(t.status==='Done')return 99999; const d=daysLeft(t.deadline); return d===null?88888:d; }
 function fmtDate(d){ return d?new Date(d+'T00:00:00').toLocaleDateString('en-IN',{day:'2-digit',month:'short',year:'numeric'}):'—'; }
-function statusBadge(s){ const m={Overdue:'s-overdue',Pending:'s-pending','In Progress':'s-progress',Done:'s-done','Not Started':'s-notstart'}; return `<span class="badge ${m[s]||'s-notstart'}">${s}</span>`; }
+function statusBadge(s){ const m={Overdue:'s-overdue',Pending:'s-pending','In Progress':'s-progress',Done:'s-done','Not Started':'s-notstart','On Hold':'s-onhold'}; return `<span class="badge ${m[s]||'s-notstart'}">${s}</span>`; }
 function priorityBadge(p){ const m={High:'p-high',Medium:'p-medium',Low:'p-low'}; return p?`<span class="badge ${m[p]||'p-low'}">${p}</span>`:'—'; }
 function daysCell(t){
   if(t.status==='Done') return `<span class="days-done">✓ Done</span>`;
@@ -851,7 +934,7 @@ function buildTable(rows,container,compact,page){
     return `<th class="${cls}" onclick="setSort('${c.key}','${page}')">${c.label}</th>`;
   }).join('');
   const trs=rows.map(t=>`<tr onclick="openTaskModal('${t._fid}')" style="cursor:pointer">
-    <td><div class="task-name">${escHtml(t.task)}</div><div class="task-remarks">${escHtml(t.remarks||'')}</div></td>
+    <td><div class="task-name">${escHtml(t.task)}${t.recurrence&&t.recurrence.type&&t.recurrence.type!=='none'?`<span class="recur-badge">🔄 ${t.recurrence.type}</span>`:''}</div><div class="task-remarks">${escHtml(t.remarks||'')}</div><div class="alloc-by">by ${escHtml(t.addedBy||'—')}</div></td>
     <td><span class="tag">${escHtml(t.assignee||'—')}</span></td>
     <td>${escHtml(t.client||'—')}</td>
     ${compact?'':`<td><span class="tag">${escHtml(t.dept||'—')}</span></td>`}
@@ -898,6 +981,9 @@ function showPage(id){
   document.getElementById('page-'+id).classList.add('active');
   document.querySelectorAll('.nav-item').forEach((n,i)=>n.classList.toggle('active',NAV_ORDER[i]===id));
   document.getElementById('page-title').textContent=PAGE_TITLES[id]||id;
+  // Show date filter strip on task pages
+  const taskPages=['today','all','client-view','assignee-view','open','completed'];
+  document.getElementById('date-strip').classList.toggle('show',taskPages.includes(id));
   if(id==='today') renderToday();
   else if(id==='all'){populateFilters();applyFilters();}
   else if(id==='client-view') renderClientView();
@@ -1035,7 +1121,7 @@ function renderDashboard(){
 }
 function renderToday(){
   document.getElementById('today-date-str').textContent=new Date().toLocaleDateString('en-IN',{weekday:'long',day:'numeric',month:'long',year:'numeric'});
-  const urgent=visibleTasks().filter(t=>{if(t.status==='Done')return false;const d=daysLeft(t.deadline);return t.status==='Overdue'||(d!==null&&d<=0);});
+  const urgent=applyDateFilter(visibleTasks()).filter(t=>{if(t.status==='Done')return false;const d=daysLeft(t.deadline);return t.status==='Overdue'||(d!==null&&d<=0);});
   document.getElementById('focus-count').textContent=urgent.length;
   document.getElementById('focus-badge').textContent=urgent.length;
   buildTable(sorted(searchFilter(urgent),'today'),document.getElementById('today-table-wrap'),false,'today');
@@ -1050,7 +1136,7 @@ function populateFilters(){
   fill('f-client',[...new Set(vt.map(t=>t.client).filter(Boolean))].sort(),'All Clients');
 }
 function applyFilters(){
-  const vt=visibleTasks();
+  const vt=applyDateFilter(visibleTasks());
   const q=document.getElementById('search-input').value.toLowerCase();
   const fs=document.getElementById('f-status').value,fp=document.getElementById('f-priority').value;
   const fd=document.getElementById('f-dept').value,fa=document.getElementById('f-assignee').value,fc=document.getElementById('f-client').value;
@@ -1067,21 +1153,21 @@ function applyFilters(){
 function clearFilters(){ ['f-status','f-priority','f-dept','f-assignee','f-client'].forEach(id=>document.getElementById(id).value='');document.getElementById('search-input').value='';applyFilters(); }
 
 function renderClientView(){
-  const vt=visibleTasks();
+  const vt=applyDateFilter(visibleTasks());
   const sel=document.getElementById('sel-client');
   const names=[...new Set(vt.map(t=>t.client).filter(Boolean))].sort();
-  const cur=sel.value||names[0]||'';
-  sel.innerHTML=names.map(n=>`<option${n===cur?' selected':''}>${n}</option>`).join('');
-  const f=vt.filter(t=>t.client===cur);
+  const cur=sel.value||'__all__';
+  sel.innerHTML=`<option value="__all__">All Clients</option>`+names.map(n=>`<option${n===cur?' selected':''}>${n}</option>`).join('');
+  const f=cur==='__all__'?vt:vt.filter(t=>t.client===cur);
   renderMiniKpis('client-kpis',f);buildTable(sorted(searchFilter(f),'client-view'),document.getElementById('client-table-wrap'),true,'client-view');
 }
 function renderAssigneeView(){
-  const vt=visibleTasks();
+  const vt=applyDateFilter(visibleTasks());
   const sel=document.getElementById('sel-assignee');
   const names=[...new Set(vt.map(t=>t.assignee).filter(Boolean))].sort();
-  const cur=sel.value||names[0]||'';
-  sel.innerHTML=names.map(n=>`<option${n===cur?' selected':''}>${n}</option>`).join('');
-  const f=vt.filter(t=>t.assignee===cur);
+  const cur=sel.value||'__all__';
+  sel.innerHTML=`<option value="__all__">All Assignees</option>`+names.map(n=>`<option${n===cur?' selected':''}>${n}</option>`).join('');
+  const f=cur==='__all__'?vt:vt.filter(t=>t.assignee===cur);
   renderMiniKpis('assignee-kpis',f);buildTable(sorted(searchFilter(f),'assignee-view'),document.getElementById('assignee-table-wrap'),true,'assignee-view');
 }
 function renderMiniKpis(id,rows){
@@ -1245,6 +1331,16 @@ function openTaskModal(fid){
   editingTaskId=fid||null;
   document.getElementById('task-modal-title').textContent=fid?'Edit Task':'Add New Task';
   populateTaskDropdowns();
+  // Reset recurrence UI
+  document.getElementById('t-recurrence').value='none';
+  document.getElementById('recur-monthly-panel').style.display='none';
+  document.getElementById('t-recur-dom').style.display='none';
+  document.getElementById('recur-dow-wrap').style.display='none';
+  document.getElementById('onhold-reason-row').style.display='none';
+  document.getElementById('t-onhold-reason').value='';
+  // Comments section
+  const cmtSection=document.getElementById('comments-section');
+  cmtSection.style.display=fid?'block':'none';
   if(fid){
     const t=tasks.find(x=>x._fid===fid);
     if(!t) return;
@@ -1255,13 +1351,30 @@ function openTaskModal(fid){
     document.getElementById('t-priority').value=t.priority||'';
     document.getElementById('t-deadline').value=t.deadline||'';
     document.getElementById('t-status').value=t.status||'Not Started';
-    document.getElementById('t-added-by').value=t.addedBy||'Adarsh';
+    document.getElementById('t-added-by').value=t.addedBy||'';
     document.getElementById('t-remarks').value=t.remarks||'';
+    // Load recurrence
+    if(t.recurrence&&t.recurrence.type!=='none'){
+      document.getElementById('t-recurrence').value=t.recurrence.type||'none';
+      onRecurrenceChange();
+      if(t.recurrence.type==='monthly'){
+        document.getElementById('t-monthly-type').value=t.recurrence.monthlyType||'date';
+        onMonthlyTypeChange();
+        if(t.recurrence.monthlyType==='date') document.getElementById('t-recur-dom').value=t.recurrence.dayOfMonth||'';
+        else{ document.getElementById('t-recur-week').value=t.recurrence.week||'first'; document.getElementById('t-recur-weekday').value=t.recurrence.weekday??1; }
+      }
+    }
+    // On Hold reason
+    if(t.status==='On Hold') document.getElementById('onhold-reason-row').style.display='block';
+    // Render comments
+    renderTaskComments(t.comments||[]);
+    document.getElementById('new-comment').value='';
   } else {
     ['t-task','t-dept','t-deadline','t-remarks'].forEach(i=>document.getElementById(i).value='');
     ['t-assignee','t-client','t-priority'].forEach(i=>document.getElementById(i).value='');
     document.getElementById('t-status').value='Not Started';
     document.getElementById('t-added-by').value=getMyMember()?.name||currentUser?.displayName?.split(' ')[0]||'';
+    document.getElementById('comments-list').innerHTML='';
   }
   document.getElementById('task-overlay').classList.add('open');
   setTimeout(()=>document.getElementById('t-task').focus(),100);
@@ -1274,23 +1387,136 @@ function closeTaskModal(e,force){
   editingTaskId=null;
 }
 
+// ── Recurrence UI handlers ───────────────────────────
+function onStatusChange(){
+  const s=document.getElementById('t-status').value;
+  document.getElementById('onhold-reason-row').style.display=s==='On Hold'?'block':'none';
+  if(s!=='On Hold') document.getElementById('t-onhold-reason').value='';
+}
+function onRecurrenceChange(){
+  const v=document.getElementById('t-recurrence').value;
+  document.getElementById('recur-monthly-panel').style.display=v==='monthly'?'flex':'none';
+  if(v==='monthly') onMonthlyTypeChange();
+}
+function onMonthlyTypeChange(){
+  const v=document.getElementById('t-monthly-type').value;
+  document.getElementById('t-recur-dom').style.display=v==='date'?'block':'none';
+  document.getElementById('recur-dow-wrap').style.display=v==='dow'?'flex':'none';
+}
+function getRecurrenceObj(){
+  const type=document.getElementById('t-recurrence').value;
+  if(!type||type==='none') return {type:'none'};
+  if(type==='weekly') return {type:'weekly'};
+  if(type==='biweekly') return {type:'biweekly'};
+  const mt=document.getElementById('t-monthly-type').value;
+  if(mt==='date') return {type:'monthly',monthlyType:'date',dayOfMonth:parseInt(document.getElementById('t-recur-dom').value)||1};
+  return {type:'monthly',monthlyType:'dow',week:document.getElementById('t-recur-week').value,weekday:parseInt(document.getElementById('t-recur-weekday').value)};
+}
+function calcNextDeadline(deadline, recurrence){
+  if(!deadline||!recurrence||recurrence.type==='none') return null;
+  const base=new Date(deadline+'T00:00:00');
+  if(recurrence.type==='weekly'){ base.setDate(base.getDate()+7); return base.toISOString().split('T')[0]; }
+  if(recurrence.type==='biweekly'){ base.setDate(base.getDate()+14); return base.toISOString().split('T')[0]; }
+  if(recurrence.type==='monthly'){
+    const y=base.getMonth()===11?base.getFullYear()+1:base.getFullYear();
+    const m=base.getMonth()===11?0:base.getMonth()+1;
+    if(recurrence.monthlyType==='date'){
+      const d=Math.min(recurrence.dayOfMonth||1,28);
+      return new Date(y,m,d).toISOString().split('T')[0];
+    }
+    // Day-of-week pattern
+    const {week,weekday}=recurrence;
+    if(week==='last'){
+      const lastDay=new Date(y,m+1,0); // last day of month
+      while(lastDay.getDay()!==weekday) lastDay.setDate(lastDay.getDate()-1);
+      return lastDay.toISOString().split('T')[0];
+    }
+    const nMap={first:1,second:2,third:3,fourth:4};
+    const n=nMap[week]||1;
+    const first=new Date(y,m,1);
+    while(first.getDay()!==weekday) first.setDate(first.getDate()+1);
+    first.setDate(first.getDate()+(n-1)*7);
+    return first.toISOString().split('T')[0];
+  }
+  return null;
+}
+
+// ── Comments ─────────────────────────────────────────
+function renderTaskComments(comments){
+  const list=document.getElementById('comments-list');
+  if(!comments||!comments.length){list.innerHTML='<div style="font-size:12px;color:var(--gray400);padding:4px 0">No comments yet.</div>';return;}
+  list.innerHTML=[...comments].reverse().map(c=>`
+    <div class="comment-item${c.type==='hold'?' hold':''}">
+      <div class="comment-meta">${escHtml(c.author||'—')} · ${c.ts?new Date(c.ts).toLocaleDateString('en-IN',{day:'2-digit',month:'short',year:'numeric',hour:'2-digit',minute:'2-digit'}):'—'}${c.type==='hold'?' 🔒 On Hold':''}</div>
+      <div class="comment-text">${escHtml(c.text)}</div>
+    </div>`).join('');
+}
+async function addTaskComment(){
+  const text=document.getElementById('new-comment').value.trim();
+  if(!text){showToast('Enter a comment first','error');return;}
+  if(!editingTaskId){showToast('Save task first before adding comments','error');return;}
+  const me=getMyMember();
+  const comment={id:Date.now()+'',text,author:me?.name||currentUser?.displayName||'',authorEmail:currentUser?.email||'',ts:Date.now(),type:'general'};
+  setLoading(true);
+  try{
+    await db.collection('tasks').doc(editingTaskId).update({comments:firebase.firestore.FieldValue.arrayUnion(comment)});
+    document.getElementById('new-comment').value='';
+    // Update local and re-render
+    const idx=tasks.findIndex(t=>t._fid===editingTaskId);
+    if(idx>=0){
+      tasks[idx].comments=[...(tasks[idx].comments||[]),comment];
+      renderTaskComments(tasks[idx].comments);
+    }
+    showToast('Comment added ✓','success');
+  }catch(e){showToast('Error: '+e.message,'error');}
+  setLoading(false);
+}
+
 async function saveTask(){
   const task=document.getElementById('t-task').value.trim();
   if(!task){showToast('Task name is required','error');return;}
+  const newStatus=document.getElementById('t-status').value;
+  // Validate On Hold reason
+  const holdReason=document.getElementById('t-onhold-reason').value.trim();
+  if(newStatus==='On Hold'&&!holdReason&&!editingTaskId){showToast('Please provide a reason for holding this task','error');return;}
+  const recurrence=getRecurrenceObj();
   const obj={task,assignee:document.getElementById('t-assignee').value,dept:document.getElementById('t-dept').value,
     client:document.getElementById('t-client').value,priority:document.getElementById('t-priority').value,
-    deadline:document.getElementById('t-deadline').value,status:document.getElementById('t-status').value,
-    addedBy: editingTaskId
-      ? (tasks.find(t=>t._fid===editingTaskId)?.addedBy||getMyMember()?.name||'')  // preserve original addedBy on edit
-      : (getMyMember()?.name||currentUser?.displayName?.split(' ')[0]||''),
+    deadline:document.getElementById('t-deadline').value,status:newStatus,recurrence,
+    addedBy:editingTaskId?(tasks.find(t=>t._fid===editingTaskId)?.addedBy||getMyMember()?.name||''):(getMyMember()?.name||currentUser?.displayName?.split(' ')[0]||''),
     remarks:document.getElementById('t-remarks').value.trim(),
     updatedAt:firebase.firestore.FieldValue.serverTimestamp(),updatedBy:currentUser?.email||''};
   setLoading(true);
-  try {
-    if(editingTaskId){ await db.collection('tasks').doc(editingTaskId).update(obj); showToast('Task updated ✓','success'); }
-    else { await db.collection('tasks').add({...obj,id:maxId(tasks),createdAt:firebase.firestore.FieldValue.serverTimestamp()}); showToast('Task added ✓','success'); }
+  try{
+    if(editingTaskId){
+      const prev=tasks.find(t=>t._fid===editingTaskId);
+      // Add On Hold comment if status just changed to On Hold and reason was given
+      const updates={...obj};
+      if(newStatus==='On Hold'&&holdReason&&prev?.status!=='On Hold'){
+        const me=getMyMember();
+        const holdComment={id:Date.now()+'',text:holdReason,author:me?.name||currentUser?.displayName||'',authorEmail:currentUser?.email||'',ts:Date.now(),type:'hold'};
+        updates.comments=firebase.firestore.FieldValue.arrayUnion(holdComment);
+      }
+      await db.collection('tasks').doc(editingTaskId).update(updates);
+      // Auto-create next instance if recurring task just marked Done
+      if(newStatus==='Done'&&recurrence.type!=='none'&&obj.deadline){
+        const nextDl=calcNextDeadline(obj.deadline,recurrence);
+        if(nextDl){
+          const next={...obj,status:'Not Started',deadline:nextDl,comments:[],
+            createdAt:firebase.firestore.FieldValue.serverTimestamp(),id:maxId(tasks)+1,
+            addedBy:obj.addedBy, remarks:'Auto-created from recurring task'};
+          delete next.updatedAt; delete next.updatedBy;
+          await db.collection('tasks').add(next);
+          showToast(`Next recurring task created for ${nextDl} ✓`,'success');
+        }
+      }
+      showToast('Task updated ✓','success');
+    } else {
+      await db.collection('tasks').add({...obj,id:maxId(tasks),comments:[],createdAt:firebase.firestore.FieldValue.serverTimestamp()});
+      showToast('Task added ✓','success');
+    }
     closeTaskModal(null,true);
-  } catch(e){ showToast('Error: '+e.message,'error'); }
+  }catch(e){showToast('Error: '+e.message,'error');}
   setLoading(false);
 }
 async function deleteTask(fid){
@@ -1443,6 +1669,45 @@ function doConfirm(title,msg,cb){ document.getElementById('confirm-title').textC
 function closeConfirm(e,force){ if(!force&&e&&e.target!==document.getElementById('confirm-overlay'))return; document.getElementById('confirm-overlay').classList.remove('open');confirmCallback=null; }
 document.getElementById('confirm-ok-btn').onclick=()=>{ if(confirmCallback)confirmCallback(); closeConfirm(null,true); };
 function showToast(msg,type){ const t=document.getElementById('toast');t.textContent=msg;t.className='toast '+(type||'');t.classList.add('show');setTimeout(()=>t.classList.remove('show'),2800); }
+// ── DATE FILTER ───────────────────────────────────────
+function applyDateFilter(arr){
+  const {type,from,to}=globalDateFilter;
+  if(type==='all') return arr;
+  const now=new Date(); now.setHours(0,0,0,0);
+  return arr.filter(t=>{
+    if(!t.deadline) return false;
+    const d=new Date(t.deadline+'T00:00:00');
+    if(type==='today_only') return d.getTime()===now.getTime();
+    if(type==='7'){ const s=new Date(now);s.setDate(s.getDate()-7);return d>=s&&d<=now; }
+    if(type==='14'){ const s=new Date(now);s.setDate(s.getDate()-14);return d>=s&&d<=now; }
+    if(type==='this_month') return d.getMonth()===now.getMonth()&&d.getFullYear()===now.getFullYear();
+    if(type==='last_month'){ const lm=new Date(now.getFullYear(),now.getMonth()-1,1);return d.getMonth()===lm.getMonth()&&d.getFullYear()===lm.getFullYear(); }
+    if(type==='custom'&&from&&to){ const s=new Date(from+'T00:00:00'),e=new Date(to+'T00:00:00');return d>=s&&d<=e; }
+    return true;
+  });
+}
+function globalDateChange(){
+  const val=document.getElementById('date-filter').value;
+  globalDateFilter.type=val;
+  const panel=document.getElementById('custom-date-panel');
+  panel.style.display=val==='custom'?'flex':'none';
+  if(val!=='custom') rerenderCurrentTaskPage();
+}
+function applyCustomDateFilter(){
+  globalDateFilter.from=document.getElementById('custom-date-from').value;
+  globalDateFilter.to=document.getElementById('custom-date-to').value;
+  if(globalDateFilter.from&&globalDateFilter.to) rerenderCurrentTaskPage();
+}
+function rerenderCurrentTaskPage(){
+  const p=currentPage;
+  if(p==='today') renderToday();
+  else if(p==='all'){populateFilters();applyFilters();}
+  else if(p==='client-view') renderClientView();
+  else if(p==='assignee-view') renderAssigneeView();
+  else if(p==='open') renderOpen();
+  else if(p==='completed') renderCompleted();
+}
+
 function renderAll(){
   renderDashboard();renderToday();
   populateFilters();applyFilters();
@@ -1480,7 +1745,7 @@ function globalSearch(){
 
 // ── OPEN TASKS ─────────────────────────────────────────
 function renderOpen(){
-  const base=visibleTasks().filter(t=>t.status!=='Done');
+  const base=applyDateFilter(visibleTasks()).filter(t=>t.status!=='Done');
   // populate assignee filter
   const asel=document.getElementById('of-assignee');
   const curA=asel.value;
@@ -1501,7 +1766,7 @@ function clearOpenFilters(){ ['of-status','of-priority','of-assignee'].forEach(i
 
 // ── COMPLETED TASKS ────────────────────────────────────
 function renderCompleted(){
-  const vt=searchFilter(visibleTasks().filter(t=>t.status==='Done'));
+  const vt=searchFilter(applyDateFilter(visibleTasks()).filter(t=>t.status==='Done'));
   document.getElementById('completed-sub').textContent=`${vt.length} completed task${vt.length!==1?'s':''}`;
   buildTable(sorted(vt,'completed'),document.getElementById('completed-table-wrap'),false,'completed');
 }
