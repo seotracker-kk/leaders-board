@@ -365,6 +365,7 @@ tr:hover .row-actions{opacity:1}
         <span style="color:var(--gray400);font-size:13px">→</span>
         <input type="date" id="custom-date-to" onchange="applyCustomDateFilter()"/>
       </div>
+      <button class="btn btn-secondary btn-sm" id="date-clear-btn" onclick="clearDateFilter()" style="display:none">✕ Clear</button>
     </div>
 
     <div class="content">
@@ -540,9 +541,27 @@ tr:hover .row-actions{opacity:1}
           <select id="t-recurrence" onchange="onRecurrenceChange()">
             <option value="none">One-time (no repeat)</option>
             <option value="weekly">Weekly</option>
-            <option value="biweekly">Bi-weekly (every 2 weeks)</option>
+            <option value="biweekly">Bi-weekly</option>
             <option value="monthly">Monthly</option>
           </select>
+          <!-- Weekly: pick a day -->
+          <div class="recur-row" id="recur-weekly-panel" style="display:none">
+            <select id="t-weekly-day" onchange="autoSetRecurDeadline()">
+              <option value="1">Monday</option>
+              <option value="2">Tuesday</option>
+              <option value="3">Wednesday</option>
+              <option value="4">Thursday</option>
+              <option value="5">Friday</option>
+              <option value="6">Saturday</option>
+            </select>
+            <span style="font-size:12px;color:var(--gray400)">— repeats every week on this day</span>
+          </div>
+          <!-- Bi-weekly: pick 1st&3rd or 2nd&4th + day -->
+          <div class="recur-row" id="recur-biweekly-panel" style="display:none">
+            <select id="t-biweekly-pattern" onchange="autoSetRecurDeadline()"></select>
+            <span style="font-size:12px;color:var(--gray400)">— repeats twice a month</span>
+          </div>
+          <!-- Monthly options -->
           <div class="recur-row" id="recur-monthly-panel" style="display:none">
             <select id="t-monthly-type" onchange="onMonthlyTypeChange()">
               <option value="date">Specific date of month</option>
@@ -934,7 +953,7 @@ function buildTable(rows,container,compact,page){
     return `<th class="${cls}" onclick="setSort('${c.key}','${page}')">${c.label}</th>`;
   }).join('');
   const trs=rows.map(t=>`<tr onclick="openTaskModal('${t._fid}')" style="cursor:pointer">
-    <td><div class="task-name">${escHtml(t.task)}${t.recurrence&&t.recurrence.type&&t.recurrence.type!=='none'?`<span class="recur-badge">🔄 ${t.recurrence.type}</span>`:''}</div><div class="task-remarks">${escHtml(t.remarks||'')}</div><div class="alloc-by">by ${escHtml(t.addedBy||'—')}</div></td>
+    <td><div class="task-name">${escHtml(t.task)}${t.recurrence&&t.recurrence.type&&t.recurrence.type!=='none'?`<span class="recur-badge">🔄 ${recurLabel(t.recurrence)}</span>`:''}</div><div class="task-remarks">${escHtml(t.remarks||'')}</div><div class="alloc-by">by ${escHtml(t.addedBy||'—')}</div></td>
     <td><span class="tag">${escHtml(t.assignee||'—')}</span></td>
     <td>${escHtml(t.client||'—')}</td>
     ${compact?'':`<td><span class="tag">${escHtml(t.dept||'—')}</span></td>`}
@@ -1332,7 +1351,10 @@ function openTaskModal(fid){
   document.getElementById('task-modal-title').textContent=fid?'Edit Task':'Add New Task';
   populateTaskDropdowns();
   // Reset recurrence UI
+  buildBiweeklyOptions();
   document.getElementById('t-recurrence').value='none';
+  document.getElementById('recur-weekly-panel').style.display='none';
+  document.getElementById('recur-biweekly-panel').style.display='none';
   document.getElementById('recur-monthly-panel').style.display='none';
   document.getElementById('t-recur-dom').style.display='none';
   document.getElementById('recur-dow-wrap').style.display='none';
@@ -1357,7 +1379,15 @@ function openTaskModal(fid){
     if(t.recurrence&&t.recurrence.type!=='none'){
       document.getElementById('t-recurrence').value=t.recurrence.type||'none';
       onRecurrenceChange();
-      if(t.recurrence.type==='monthly'){
+      if(t.recurrence.type==='weekly'){
+        document.getElementById('t-weekly-day').value=t.recurrence.weekday||1;
+      } else if(t.recurrence.type==='biweekly'){
+        const {weekday,weeks}=t.recurrence;
+        if(weekday&&weeks&&weeks.length===2){
+          const sorted=[...weeks].sort((a,b)=>a-b);
+          document.getElementById('t-biweekly-pattern').value=`${weekday}-${sorted[0]}-${sorted[1]}`;
+        }
+      } else if(t.recurrence.type==='monthly'){
         document.getElementById('t-monthly-type').value=t.recurrence.monthlyType||'date';
         onMonthlyTypeChange();
         if(t.recurrence.monthlyType==='date') document.getElementById('t-recur-dom').value=t.recurrence.dayOfMonth||'';
@@ -1393,10 +1423,46 @@ function onStatusChange(){
   document.getElementById('onhold-reason-row').style.display=s==='On Hold'?'block':'none';
   if(s!=='On Hold') document.getElementById('t-onhold-reason').value='';
 }
+function buildBiweeklyOptions(){
+  const days=[{v:1,l:'Monday'},{v:2,l:'Tuesday'},{v:3,l:'Wednesday'},{v:4,l:'Thursday'},{v:5,l:'Friday'},{v:6,l:'Saturday'}];
+  const sel=document.getElementById('t-biweekly-pattern');
+  if(!sel) return;
+  sel.innerHTML=days.flatMap(d=>[
+    `<option value="${d.v}-1-3">1st &amp; 3rd ${d.l}</option>`,
+    `<option value="${d.v}-2-4">2nd &amp; 4th ${d.l}</option>`
+  ]).join('');
+}
+function autoSetRecurDeadline(){
+  const type=document.getElementById('t-recurrence').value;
+  const today=new Date(); today.setHours(0,0,0,0);
+  if(type==='weekly'){
+    const wd=parseInt(document.getElementById('t-weekly-day').value);
+    const next=new Date(today);
+    // find next occurrence of wd (if today matches, use today)
+    while(next.getDay()!==wd) next.setDate(next.getDate()+1);
+    document.getElementById('t-deadline').value=next.toISOString().split('T')[0];
+  } else if(type==='biweekly'){
+    const parts=document.getElementById('t-biweekly-pattern').value.split('-');
+    const wd=parseInt(parts[0]);
+    const weeks=[parseInt(parts[1]),parseInt(parts[2])].sort((a,b)=>a-b);
+    // Find next upcoming occurrence in pattern
+    for(let mo=0;mo<3;mo++){
+      const m=(today.getMonth()+mo)%12;
+      const y=today.getFullYear()+Math.floor((today.getMonth()+mo)/12);
+      for(const w of weeks){
+        const d=getNthWeekdayOfMonth(y,m,wd,w);
+        if(d&&d>=today){document.getElementById('t-deadline').value=d.toISOString().split('T')[0];return;}
+      }
+    }
+  }
+}
 function onRecurrenceChange(){
   const v=document.getElementById('t-recurrence').value;
+  document.getElementById('recur-weekly-panel').style.display=v==='weekly'?'flex':'none';
+  document.getElementById('recur-biweekly-panel').style.display=v==='biweekly'?'flex':'none';
   document.getElementById('recur-monthly-panel').style.display=v==='monthly'?'flex':'none';
   if(v==='monthly') onMonthlyTypeChange();
+  if(v==='weekly'||v==='biweekly') autoSetRecurDeadline();
 }
 function onMonthlyTypeChange(){
   const v=document.getElementById('t-monthly-type').value;
@@ -1406,17 +1472,71 @@ function onMonthlyTypeChange(){
 function getRecurrenceObj(){
   const type=document.getElementById('t-recurrence').value;
   if(!type||type==='none') return {type:'none'};
-  if(type==='weekly') return {type:'weekly'};
-  if(type==='biweekly') return {type:'biweekly'};
+  if(type==='weekly'){
+    return {type:'weekly',weekday:parseInt(document.getElementById('t-weekly-day').value)};
+  }
+  if(type==='biweekly'){
+    const parts=document.getElementById('t-biweekly-pattern').value.split('-');
+    return {type:'biweekly',weekday:parseInt(parts[0]),weeks:[parseInt(parts[1]),parseInt(parts[2])]};
+  }
   const mt=document.getElementById('t-monthly-type').value;
   if(mt==='date') return {type:'monthly',monthlyType:'date',dayOfMonth:parseInt(document.getElementById('t-recur-dom').value)||1};
   return {type:'monthly',monthlyType:'dow',week:document.getElementById('t-recur-week').value,weekday:parseInt(document.getElementById('t-recur-weekday').value)};
 }
+const _WD_NAMES=['Sun','Mon','Tue','Wed','Thu','Fri','Sat'];
+function recurLabel(r){
+  if(!r||r.type==='none') return '';
+  if(r.type==='weekly') return `Weekly ${_WD_NAMES[r.weekday]||''}`;
+  if(r.type==='biweekly'&&r.weeks&&r.weeks.length===2){
+    const sorted=[...r.weeks].sort((a,b)=>a-b);
+    return `${sorted[0]==='1'||sorted[0]===1?'1st':'2nd'}&${sorted[1]==='3'||sorted[1]===3?'3rd':'4th'} ${_WD_NAMES[r.weekday]||''}`;
+  }
+  if(r.type==='monthly') return 'Monthly';
+  return r.type;
+}
+// Returns the Nth occurrence of weekday (0=Sun…6=Sat) in given year/month (0-indexed)
+function getNthWeekdayOfMonth(year,month,weekday,n){
+  const first=new Date(year,month,1);
+  while(first.getDay()!==weekday) first.setDate(first.getDate()+1);
+  first.setDate(first.getDate()+(n-1)*7);
+  if(first.getMonth()!==month) return null;
+  return first;
+}
+// Returns which occurrence (1,2,3,4,5) of its weekday in its month a date is
+function getOccurrenceOfWeekdayInMonth(date){
+  const wd=date.getDay();
+  const first=new Date(date.getFullYear(),date.getMonth(),1);
+  while(first.getDay()!==wd) first.setDate(first.getDate()+1);
+  let n=1,d=new Date(first);
+  while(d<date){d.setDate(d.getDate()+7);n++;}
+  return n;
+}
 function calcNextDeadline(deadline, recurrence){
   if(!deadline||!recurrence||recurrence.type==='none') return null;
   const base=new Date(deadline+'T00:00:00');
-  if(recurrence.type==='weekly'){ base.setDate(base.getDate()+7); return base.toISOString().split('T')[0]; }
-  if(recurrence.type==='biweekly'){ base.setDate(base.getDate()+14); return base.toISOString().split('T')[0]; }
+  if(recurrence.type==='weekly'){
+    // +7 days lands on same weekday
+    base.setDate(base.getDate()+7);
+    return base.toISOString().split('T')[0];
+  }
+  if(recurrence.type==='biweekly'){
+    const {weekday,weeks}=recurrence;
+    if(!weeks||weeks.length!==2) return null;
+    const sorted=[...weeks].sort((a,b)=>a-b);
+    const currOcc=getOccurrenceOfWeekdayInMonth(base);
+    const idx=sorted.indexOf(currOcc);
+    // If on the first of the pair, move to second (same month)
+    if(idx===0){
+      const next=getNthWeekdayOfMonth(base.getFullYear(),base.getMonth(),weekday,sorted[1]);
+      if(next) return next.toISOString().split('T')[0];
+    }
+    // Otherwise go to first of pair in next month
+    const nm=base.getMonth()===11?0:base.getMonth()+1;
+    const ny=base.getMonth()===11?base.getFullYear()+1:base.getFullYear();
+    const next=getNthWeekdayOfMonth(ny,nm,weekday,sorted[0]);
+    if(next) return next.toISOString().split('T')[0];
+    return null;
+  }
   if(recurrence.type==='monthly'){
     const y=base.getMonth()===11?base.getFullYear()+1:base.getFullYear();
     const m=base.getMonth()===11?0:base.getMonth()+1;
@@ -1691,12 +1811,20 @@ function globalDateChange(){
   globalDateFilter.type=val;
   const panel=document.getElementById('custom-date-panel');
   panel.style.display=val==='custom'?'flex':'none';
+  document.getElementById('date-clear-btn').style.display=val==='all'?'none':'inline-flex';
   if(val!=='custom') rerenderCurrentTaskPage();
 }
 function applyCustomDateFilter(){
   globalDateFilter.from=document.getElementById('custom-date-from').value;
   globalDateFilter.to=document.getElementById('custom-date-to').value;
   if(globalDateFilter.from&&globalDateFilter.to) rerenderCurrentTaskPage();
+}
+function clearDateFilter(){
+  globalDateFilter={type:'all',from:null,to:null};
+  document.getElementById('date-filter').value='all';
+  document.getElementById('custom-date-panel').style.display='none';
+  document.getElementById('date-clear-btn').style.display='none';
+  rerenderCurrentTaskPage();
 }
 function rerenderCurrentTaskPage(){
   const p=currentPage;
