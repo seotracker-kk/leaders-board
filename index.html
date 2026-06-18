@@ -57,6 +57,9 @@ body{font-family:'Segoe UI',Arial,sans-serif;background:var(--gray100);color:var
 .nav-item.active{background:rgba(255,255,255,.1);color:#fff;border-left-color:var(--accent)}
 .nav-item .icon{font-size:15px;width:20px;text-align:center}
 .nav-item .badge{margin-left:auto;background:var(--accent);color:#fff;border-radius:10px;padding:1px 7px;font-size:11px;font-weight:700}
+.nav-item.member-nav{padding-left:28px;font-size:12.5px;color:rgba(255,255,255,.5)}
+.nav-item.member-nav:hover{color:rgba(255,255,255,.9)}
+.nav-item.member-nav.active{color:#fff;background:rgba(255,255,255,.08);border-left-color:var(--accent)}
 .sidebar-user{padding:12px 16px;border-top:1px solid rgba(255,255,255,.1);display:flex;align-items:center;gap:10px}
 .user-avatar{width:34px;height:34px;border-radius:50%;border:2px solid rgba(255,255,255,.2);object-fit:cover;background:var(--blue);display:flex;align-items:center;justify-content:center;font-size:14px;font-weight:700;color:#fff;flex-shrink:0;overflow:hidden}
 .user-avatar img{width:100%;height:100%;object-fit:cover}
@@ -322,17 +325,19 @@ tr:hover .row-actions{opacity:1}
     <div class="sidebar-logo"><h1>88gravity</h1><span>Task Dashboard</span></div>
     <nav class="sidebar-nav">
       <div class="nav-section">Overview</div>
-      <div class="nav-item active" onclick="showPage('dashboard')"><span class="icon">📊</span>Dashboard</div>
-      <div class="nav-item" onclick="showPage('today')"><span class="icon">🎯</span>Today's Focus<span class="badge" id="focus-badge">0</span></div>
+      <div class="nav-item active" data-page="dashboard" onclick="showPage('dashboard')"><span class="icon">📊</span>Dashboard</div>
+      <div class="nav-item" data-page="today" onclick="showPage('today')"><span class="icon">🎯</span>Today's Focus<span class="badge" id="focus-badge">0</span></div>
       <div class="nav-section" style="margin-top:8px">Tasks</div>
-      <div class="nav-item" onclick="showPage('all')"><span class="icon">📋</span>All Tasks</div>
-      <div class="nav-item" onclick="showPage('client-view')"><span class="icon">🏢</span>By Client</div>
-      <div class="nav-item" onclick="showPage('assignee-view')"><span class="icon">👤</span>By Assignee</div>
-      <div class="nav-item" onclick="showPage('open')"><span class="icon">📂</span>Open Tasks<span class="badge" id="open-badge">0</span></div>
-      <div class="nav-item" onclick="showPage('completed')"><span class="icon">✅</span>Completed<span class="badge" id="completed-badge" style="background:var(--green)">0</span></div>
+      <div class="nav-item" data-page="all" onclick="showPage('all')"><span class="icon">📋</span>All Tasks</div>
+      <div class="nav-item" data-page="client-view" onclick="showPage('client-view')"><span class="icon">🏢</span>By Client</div>
+      <div class="nav-item" data-page="assignee-view" onclick="showPage('assignee-view')"><span class="icon">👤</span>By Assignee</div>
+      <div class="nav-item" data-page="open" onclick="showPage('open')"><span class="icon">📂</span>Open Tasks<span class="badge" id="open-badge">0</span></div>
+      <div class="nav-item" data-page="completed" onclick="showPage('completed')"><span class="icon">✅</span>Completed<span class="badge" id="completed-badge" style="background:var(--green)">0</span></div>
       <div class="nav-section" style="margin-top:8px">Manage</div>
-      <div class="nav-item" onclick="showPage('team')"><span class="icon">👥</span>Team</div>
-      <div class="nav-item" onclick="showPage('clients-mgmt')"><span class="icon">🤝</span>Clients</div>
+      <div class="nav-item" data-page="team" onclick="showPage('team')"><span class="icon">👥</span>Team</div>
+      <div class="nav-item" data-page="clients-mgmt" onclick="showPage('clients-mgmt')"><span class="icon">🤝</span>Clients</div>
+      <!-- Dynamic team member dashboards (super-admin only) -->
+      <div id="team-member-nav" style="display:none"></div>
     </nav>
     <div class="sidebar-user">
       <div class="user-avatar" id="user-avatar">?</div>
@@ -465,6 +470,14 @@ tr:hover .row-actions{opacity:1}
       <div class="page" id="page-clients-mgmt">
         <div class="section-header"><div><div class="section-title">Clients</div><div class="section-sub" id="clients-sub"></div></div><button class="btn btn-green" onclick="openClientModal()">＋ Add Client</button></div>
         <div class="mgmt-grid" id="clients-grid"></div>
+      </div>
+
+      <!-- Member dashboard (super-admin view) -->
+      <div class="page" id="page-member-view">
+        <div class="section-header">
+          <div><div class="section-title" id="member-view-title">Team Member Tasks</div><div class="section-sub" id="member-view-sub"></div></div>
+        </div>
+        <div class="table-wrap" id="member-view-wrap"></div>
       </div>
     </div>
   </main>
@@ -692,7 +705,8 @@ let editingTaskId=null, editingAssigneeId=null, editingClientId=null, confirmCal
 let currentPage='dashboard', currentUser=null;
 let unsubscribers=[];
 let globalDateFilter={type:'all', from:null, to:null};
-const pageSort={dashboard:{col:null,dir:1},today:{col:'days',dir:1},all:{col:'days',dir:1},'client-view':{col:'days',dir:1},'assignee-view':{col:'days',dir:1},open:{col:'days',dir:1},completed:{col:'deadline',dir:-1}};
+const pageSort={dashboard:{col:null,dir:1},today:{col:'days',dir:1},all:{col:'days',dir:1},'client-view':{col:'days',dir:1},'assignee-view':{col:'days',dir:1},open:{col:'days',dir:1},completed:{col:'deadline',dir:-1},'member-view':{col:'days',dir:1}};
+let currentMemberView=null;
 const NAV_ORDER=['dashboard','today','all','client-view','assignee-view','open','completed','team','clients-mgmt'];
 const BASE_POSITIONS=["Co-founder","AVP","Manager","AM","TL","Executive"];
 const BASE_SERVICES=["SEO","GMB","AI SEO","Social"];
@@ -855,15 +869,18 @@ async function seedIfEmpty() {
 function setLoading(on){ document.getElementById('loading-bar').classList.toggle('show', on); }
 
 // ── ROLE-BASED ACCESS ──────────────────────────────────
+const SUPER_ADMIN_EMAILS=['kuldeep@88gravity.com','contact@88gravity.com','depreet@88gravity.com'];
+function isSuperAdmin(){
+  return !!(currentUser&&SUPER_ADMIN_EMAILS.includes(currentUser.email.toLowerCase()));
+}
 // Match logged-in Google email → team member record
 function getMyMember(){
   if(!currentUser||!assignees.length) return null;
   return assignees.find(a=>a.email&&a.email.toLowerCase()===currentUser.email.toLowerCase())||null;
 }
-
-// Tasks visible to the current user:
-//   • tasks I created (addedBy === my name)
-//   • tasks assigned to me (assignee === my name)
+// Tasks visible to current user in main dashboard views:
+//   Super admin  → only their own tasks (team member tasks visible via Team Dashboard tabs only)
+//   Regular user → only tasks assigned to/added by them
 function visibleTasks(){
   const me=getMyMember();
   if(!me) return [];
@@ -998,16 +1015,23 @@ function sorted(arr,page){
 // ═══════════════════════════════════════════════════════
 function toggleSidebar(){ const sb=document.getElementById('sidebar'),hb=document.getElementById('hamburger'),bd=document.getElementById('sidebar-backdrop'); const o=sb.classList.toggle('mobile-open');hb.classList.toggle('open',o);bd.classList.toggle('show',o); }
 function closeSidebar(){ document.getElementById('sidebar').classList.remove('mobile-open');document.getElementById('hamburger').classList.remove('open');document.getElementById('sidebar-backdrop').classList.remove('show'); }
-const PAGE_TITLES={dashboard:'Dashboard',today:"Today's Focus",all:'All Tasks','client-view':'By Client','assignee-view':'By Assignee',open:'Open Tasks',completed:'Completed Tasks',team:'Team','clients-mgmt':'Clients'};
+const PAGE_TITLES={dashboard:'Dashboard',today:"Today's Focus",all:'All Tasks','client-view':'By Client','assignee-view':'By Assignee',open:'Open Tasks',completed:'Completed Tasks',team:'Team','clients-mgmt':'Clients','member-view':'Team Member'};
 
 function showPage(id){
   currentPage=id; closeSidebar();
   document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));
-  document.getElementById('page-'+id).classList.add('active');
-  document.querySelectorAll('.nav-item').forEach((n,i)=>n.classList.toggle('active',NAV_ORDER[i]===id));
-  document.getElementById('page-title').textContent=PAGE_TITLES[id]||id;
+  const pg=document.getElementById('page-'+id);
+  if(pg) pg.classList.add('active');
+  // Update nav active state using data-page attributes
+  document.querySelectorAll('.nav-item').forEach(n=>{
+    const np=n.dataset.page;
+    const nm=n.dataset.member;
+    n.classList.toggle('active', np===id && (id!=='member-view'||nm===currentMemberView));
+  });
+  document.getElementById('page-title').textContent=
+    id==='member-view'&&currentMemberView ? currentMemberView+"'s Dashboard" : (PAGE_TITLES[id]||id);
   // Show date filter strip on task pages
-  const taskPages=['today','all','client-view','assignee-view','open','completed'];
+  const taskPages=['today','all','client-view','assignee-view','open','completed','member-view'];
   document.getElementById('date-strip').classList.toggle('show',taskPages.includes(id));
   if(id==='today') renderToday();
   else if(id==='all'){populateFilters();applyFilters();}
@@ -1017,7 +1041,12 @@ function showPage(id){
   else if(id==='completed') renderCompleted();
   else if(id==='team') renderTeam();
   else if(id==='clients-mgmt') renderClientsMgmt();
+  else if(id==='member-view') renderMemberView();
   else renderDashboard();
+}
+function showMemberPage(name){
+  currentMemberView=name;
+  showPage('member-view');
 }
 
 // ═══════════════════════════════════════════════════════
@@ -1901,6 +1930,28 @@ function rerenderCurrentTaskPage(){
   else if(p==='completed') renderCompleted();
 }
 
+function renderMemberView(){
+  if(!currentMemberView) return;
+  document.getElementById('member-view-title').textContent=currentMemberView+"'s Tasks";
+  const memberTasks=applyDateFilter(searchFilter(tasks.filter(t=>t.assignee===currentMemberView)));
+  const sub=document.getElementById('member-view-sub');
+  if(sub) sub.textContent=memberTasks.length+' task'+(memberTasks.length!==1?'s':'');
+  buildTable(sorted(memberTasks,'member-view'),document.getElementById('member-view-wrap'),false,'member-view');
+}
+function updateTeamMemberNav(){
+  const navEl=document.getElementById('team-member-nav');
+  if(!navEl) return;
+  if(!isSuperAdmin()){navEl.style.display='none';return;}
+  const regularMembers=assignees.filter(a=>!(a.email&&SUPER_ADMIN_EMAILS.includes(a.email.toLowerCase())));
+  if(!regularMembers.length){navEl.style.display='none';return;}
+  navEl.style.display='block';
+  navEl.innerHTML=
+    `<div class="nav-section" style="margin-top:8px">Team Dashboards</div>`+
+    regularMembers.map(a=>{
+      const safeId=a.name.replace(/[^a-zA-Z0-9]/g,'-');
+      return `<div class="nav-item member-nav" data-page="member-view" data-member="${a.name}" onclick="showMemberPage('${a.name.replace(/'/g,"\\'")}')"><span class="icon">👤</span>${escHtml(a.name)}</div>`;
+    }).join('');
+}
 function renderAll(){
   renderDashboard();renderToday();
   populateFilters();applyFilters();
@@ -1910,6 +1961,8 @@ function renderAll(){
   if(currentPage==='clients-mgmt')renderClientsMgmt();
   if(currentPage==='client-view')renderClientView();
   if(currentPage==='assignee-view')renderAssigneeView();
+  if(currentPage==='member-view')renderMemberView();
+  updateTeamMemberNav();
   // sidebar badges
   const vt=visibleTasks();
   const openCount=vt.filter(t=>t.status!=='Done').length;
